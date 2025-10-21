@@ -1,0 +1,7 @@
+numpy
+pandas
+pydantic
+PyYAML
+yfinance
+requests
+pytest
