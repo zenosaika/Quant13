@@ -66,6 +66,15 @@ python main.py TICKER
 ```
 Output: a formatted JSON trade proposal printed to stdout, plus timestamped JSON reports for each agent, thesis, trader decision, and risk overlay written to `results/<TICKER>_<YYYYMMDD_HHMMSS>/`.
 
+### Generating the PDF dossier
+After a pipeline run produces a `results/<TICKER>_<TIMESTAMP>/` folder you can render the printable trade dossier:
+
+```bash
+.venv/bin/python generate_report.py TICKER YYYYMMDD_HHMMSS
+```
+
+The PDF writer now renders a table-first layout tuned for WeasyPrint so content flows predictably across pages and headline sections remain aligned.
+
 ## Project 13 Immersive CLI
 An Ink-powered terminal experience ships alongside the Python entry point. It renders the full Project 13 agent collective with persona colors, live spinners, gauges, and a splash intro.
 

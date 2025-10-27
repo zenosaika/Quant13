@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quant13 Options Report – {{ context.ticker }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.45;
+            color: #0F172A;
+            background: #FFFFFF;
+        }
+
+        .report {
+            width: 100%;
+        }
+
+        header {
+            border-bottom: 2px solid #1D4ED8;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22pt;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin: 4px 0 0;
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 22px;
+            font-size: 10pt;
+        }
+
+        .meta-table th {
+            background: #EEF2FF;
+            color: #1E3A8A;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: 1px solid #DBEAFE;
+            padding: 6px 8px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .meta-table td {
+            border: 1px solid #DBEAFE;
+            padding: 6px 8px;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        section {
+            margin-bottom: 22px;
+            page-break-inside: avoid;
+        }
+
+        section h2 {
+            margin: 0 0 8px;
+            font-size: 14pt;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #1D4ED8;
+        }
+
+        section h3 {
+            margin: 10px 0 6px;
+            font-size: 11pt;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #0F172A;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        ul li {
+            margin-bottom: 4px;
+        }
+
+        .two-column {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .two-column td {
+            border: 1px solid #DBEAFE;
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            font-size: 10pt;
+        }
+
+        .table th {
+            background: #F1F5FF;
+            color: #1E3A8A;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border: 1px solid #DBEAFE;
+            padding: 6px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .table td {
+            border: 1px solid #DBEAFE;
+            padding: 6px;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        .narrative {
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            padding: 10px 12px;
+            font-size: 10pt;
+            margin-top: 8px;
+        }
+
+        .small {
+            font-size: 9pt;
+            color: #64748B;
+        }
+
+        figure {
+            margin: 0;
+            text-align: center;
+        }
+
+        figure img {
+            width: 100%;
+            border: 1px solid #DBEAFE;
+        }
+
+        figure figcaption {
+            margin-top: 4px;
+            font-size: 9pt;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        footer {
+            border-top: 1px solid #E2E8F0;
+            padding-top: 10px;
+            font-size: 9pt;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div class="report">
+    <header>
+        <h1>{{ context.ticker }} Options Strategy Report</h1>
+        <p>Generated {{ context.report_date }} · Results Folder: {{ context.results_folder }}</p>
+    </header>
+
+    {% if context.meta %}
+    <table class="meta-table">
+        {% for row in context.meta | batch(4, fill_with=None) %}
+            <tr>
+                {% for item in row %}
+                    {% if item %}<th>{{ item.label }}</th>{% endif %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for item in row %}
+                    {% if item %}<td>{{ item.value }}</td>{% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <section>
+        <h2>Executive Summary</h2>
+        <table class="two-column">
+            <tr>
+                <td>
+                    <h3>{{ context.executive_summary.headline }}</h3>
+                    {% if context.executive_summary.bullets %}
+                        <ul>
+                            {% for bullet in context.executive_summary.bullets %}
+                                <li>{{ bullet }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="small">No summary bullets available.</p>
+                    {% endif %}
+                </td>
+                <td>
+                    <h3>Market Snapshot</h3>
+                    <table class="table">
+                        <tbody>
+                        {% for row in context.market_snapshot_rows %}
+                            <tr>
+                                <th>{{ row.label }}</th>
+                                <td>{{ row.value }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>Trade Plan</h2>
+        <p class="small">
+            Strategy: <strong>{{ context.trade.strategy or 'N/A' }}</strong>
+            · Direction: <strong>{{ context.trade.direction or 'N/A' }}</strong>
+            · Conviction: <strong>{{ context.trade.conviction or 'N/A' }}</strong>
+            · Quantity: <strong>{{ context.trade.quantity or 'N/A' }}</strong>
+            · Action: <strong>{{ context.trade.action or 'N/A' }}</strong>
+        </p>
+        {% if context.trade.highlights %}
+            <table class="table">
+                <thead>
+                    <tr><th>Metric</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in context.trade.highlights %}
+                        <tr>
+                            <th>{{ item.label }}</th>
+                            <td>{{ item.value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.trade.legs %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Type</th>
+                        <th>Contract</th>
+                        <th>Expiration</th>
+                        <th>Strike</th>
+                        <th>Quantity</th>
+                        <th>Key Greeks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leg in context.trade.legs %}
+                        <tr>
+                            <td>{{ leg.action }}</td>
+                            <td>{{ leg.type }}</td>
+                            <td><span class="nowrap">{{ leg.symbol }}</span></td>
+                            <td><span class="nowrap">{{ leg.expiration }}</span></td>
+                            <td><span class="nowrap">{{ leg.strike }}</span></td>
+                            <td>{{ leg.quantity }}</td>
+                            <td>{{ leg.greeks }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.trade.justification_html %}
+            <div class="narrative">{{ context.trade.justification_html | safe }}</div>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Debate &amp; Thesis</h2>
+        {% if context.thesis.narrative_html %}
+            <div class="narrative">{{ context.thesis.narrative_html | safe }}</div>
+        {% else %}
+            <p class="small">No thesis narrative available.</p>
+        {% endif %}
+        {% if context.thesis.plan_rows %}
+            <h3>Key Plan Items</h3>
+            <table class="table">
+                <tbody>
+                {% for row in context.thesis.plan_rows %}
+                    <tr>
+                        <th>{{ row.label }}</th>
+                        <td>{{ row.value }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.thesis.evidence %}
+            <h3>Supporting Evidence</h3>
+            {% for item in context.thesis.evidence %}
+                <p><strong>{{ item.type }}</strong></p>
+                <div class="narrative">{{ item.detail_html | safe }}</div>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Technical Overview</h2>
+        <p class="small">Primary Bias: <strong>{{ context.technical.bias or 'Neutral' }}</strong></p>
+        {% if context.technical.summary_html %}
+            <div class="narrative">{{ context.technical.summary_html | safe }}</div>
+        {% endif %}
+        {% if context.technical.indicators %}
+            <table class="table">
+                <thead>
+                    <tr><th>Indicator</th><th>Value</th><th>Context</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in context.technical.indicators %}
+                        <tr>
+                            <td>{{ item.label }}</td>
+                            <td>{{ item.value }}</td>
+                            <td>{{ item.context }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.technical.key_levels or context.technical.patterns %}
+            <h3>Levels &amp; Patterns</h3>
+            <table class="table">
+                <thead>
+                    <tr><th>Label</th><th>Detail</th></tr>
+                </thead>
+                <tbody>
+                    {% for level in context.technical.key_levels %}
+                        <tr>
+                            <td>{{ level.label }}</td>
+                            <td>{{ level.value }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for pattern in context.technical.patterns %}
+                        <tr>
+                            <td>{{ pattern.pattern }}</td>
+                            <td>{{ pattern.date }} · {{ pattern.signal }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Fundamental Highlights</h2>
+        {% if context.fundamentals.business_summary_html %}
+            <div class="narrative">{{ context.fundamentals.business_summary_html | safe }}</div>
+        {% endif %}
+        {% if context.fundamentals.ratios %}
+            <h3>Key Ratios</h3>
+            <table class="table">
+                <tbody>
+                {% for ratio in context.fundamentals.ratios %}
+                    <tr>
+                        <th>{{ ratio.label }}</th>
+                        <td>{{ ratio.value }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% for trend in context.fundamentals.trend_tables %}
+            <h3>{{ trend.metric }}</h3>
+            {% if trend.direction %}<p class="small">Direction: {{ trend.direction }}</p>{% endif %}
+            <table class="table">
+                <thead>
+                    <tr><th>Period</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                {% for row in trend.rows %}
+                    <tr>
+                        <td>{{ row.period }}</td>
+                        <td>{{ row.value }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+        {% set mdna = context.fundamentals.mdna %}
+        {% if mdna.performance_drivers or mdna.opportunities or mdna.concerns %}
+            <h3>MD&amp;A Signals</h3>
+            {% if mdna.performance_drivers %}
+                <p class="small"><strong>Performance Drivers</strong></p>
+                <ul>
+                    {% for item in mdna.performance_drivers %}<li>{{ item }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+            {% if mdna.opportunities %}
+                <p class="small"><strong>Opportunities</strong></p>
+                <ul>
+                    {% for item in mdna.opportunities %}<li>{{ item }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+            {% if mdna.concerns %}
+                <p class="small"><strong>Concerns</strong></p>
+                <ul>
+                    {% for item in mdna.concerns %}<li>{{ item }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+        {% if context.fundamentals.risk_matrix %}
+            <h3>Risk Factors</h3>
+            <table class="table">
+                <thead><tr><th>Risk</th><th>Category</th><th>Rationale</th></tr></thead>
+                <tbody>
+                {% for risk in context.fundamentals.risk_matrix %}
+                    <tr>
+                        <td>{{ risk.risk }}</td>
+                        <td>{{ risk.category }}</td>
+                        <td>{{ risk.rationale }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Sentiment &amp; Headlines</h2>
+        <p class="small"><strong>Score:</strong> {{ context.sentiment.score }} · {{ context.sentiment.summary }}</p>
+        {% if context.sentiment.articles %}
+            <table class="table">
+                <thead><tr><th>Title</th><th>Publisher</th><th>Published</th><th>Summary</th></tr></thead>
+                <tbody>
+                {% for article in context.sentiment.articles %}
+                    <tr>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.publisher }}</td>
+                        <td>{{ article.published }}</td>
+                        <td>{{ article.summary }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="small">No recent headlines captured.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Volatility &amp; Risk Desk</h2>
+        {% if context.volatility.metrics %}
+            <table class="table">
+                <tbody>
+                {% for metric in context.volatility.metrics %}
+                    <tr>
+                        <th>{{ metric.label }}</th>
+                        <td>{{ metric.value }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.volatility.forecast %}
+            <div class="narrative">{{ context.volatility.forecast }}</div>
+        {% endif %}
+        {% if context.risk.final %}
+            <p class="small"><strong>Final Recommendation:</strong> {{ context.risk.final }}</p>
+        {% endif %}
+        {% if context.risk.adjustments %}
+            <table class="table">
+                <thead><tr><th>Profile</th><th>Guidance</th></tr></thead>
+                <tbody>
+                {% for item in context.risk.adjustments %}
+                    <tr>
+                        <td>{{ item.profile }}</td>
+                        <td>{{ item.recommendation }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+
+    {% if context.visuals.trend_charts %}
+    <section>
+        <h2>Visuals</h2>
+        {% for chart in context.visuals.trend_charts %}
+            <figure>
+                <img src="{{ chart.image }}" alt="{{ chart.label }}" />
+                <figcaption>{{ chart.label }}</figcaption>
+            </figure>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <footer>
+        {{ context.disclaimer }}
+    </footer>
+</div>
+</body>
+</html>
