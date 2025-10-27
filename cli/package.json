@@ -5,7 +5,7 @@
   "main": "dist/cli.js",
   "scripts": {
     "build": "tsc",
-    "start": "node --loader ts-node/esm src/cli.tsx",
+    "start": "node --no-deprecation --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/cli.tsx",
     "test": "npm run build"
   },
   "keywords": [],

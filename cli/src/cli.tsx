@@ -6,6 +6,7 @@ import type { HeaderProps } from './Header.js';
 import { LogArea } from './LogArea.js';
 import { InputArea } from './InputArea.js';
 import { SplashScreen } from './SplashScreen.js';
+import { LaunchShowcase } from './LaunchShowcase.js';
 import type { AddLogFn, LogMessage, UpdateLogFn } from './types.js';
 import { runAgentLogic } from './agent-logic.js';
 
@@ -130,6 +131,7 @@ const App: React.FC = () => {
 
   return (
     <Box flexDirection="column" width="100%" height="100%">
+      <LaunchShowcase />
       <Header {...headerProps} />
       <LogArea logs={logs} />
       {isInteractiveSession ? (
