@@ -66,6 +66,30 @@ python main.py TICKER
 ```
 Output: a formatted JSON trade proposal printed to stdout, plus timestamped JSON reports for each agent, thesis, trader decision, and risk overlay written to `results/<TICKER>_<YYYYMMDD_HHMMSS>/`.
 
+## Project 13 Immersive CLI
+An Ink-powered terminal experience ships alongside the Python entry point. It renders the full Project 13 agent collective with persona colors, live spinners, gauges, and a splash intro.
+
+1. Install Node.js ≥ 18 (Node 24 is pre-installed in the dev environment).
+2. From the repo root:
+   ```bash
+   cd cli
+   npm install
+   ```
+3. Launch the console interactively:
+   ```bash
+   npm start
+   ```
+   Or run non-interactively (useful for scripts/CI):
+   ```bash
+   printf "AAPL\n" | npm start
+   ```
+
+Highlights:
+- Animated “Project 13” splash art and persistent status header (ticker focus, working directory).
+- Persona-specific frames for Volatility, Sentiment, Technical, Fundamental, Debate, Trader, Risk, and Artifact courier agents.
+- Rich metadata (IV rank gauges, sentiment arcs, thesis evidence, option-leg breakdowns) streamed directly from the Python pipeline via `src/cli_bridge.py`.
+- Non-interactive mode auto-exits after rendering the full report, making it drop-in for automation.
+
 ## Testing
 ```bash
 .venv/bin/pytest
