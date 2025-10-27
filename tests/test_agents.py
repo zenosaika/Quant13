@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+import json
 import numpy as np
 import pandas as pd
 
@@ -70,8 +71,7 @@ def test_volatility_agent_outputs_report():
 
 def test_sentiment_agent_scores_news():
     agent = SentimentAgent({
-        "positive_keywords": ["surge"],
-        "negative_keywords": ["halt"],
+        "prompt": "You are a News & Sentiment Analyst.",
     })
     report = agent.run({
         "ticker": "TEST",
@@ -80,13 +80,14 @@ def test_sentiment_agent_scores_news():
             {"title": "Temporary production halt reported"},
         ],
     })
-    assert len(report.key_headlines) == 2
+    assert report.articles
     assert -1.0 <= report.overall_sentiment_score <= 1.0
 
 
 def test_technical_agent_generates_summary():
     agent = TechnicalAnalyst({
-        "moving_averages": [5, 10],
+        "prompt": "You are an expert Technical Analyst.",
+        "sma_periods": [5, 10],
         "macd": {"short_window": 3, "long_window": 6, "signal_window": 2},
         "rsi_window": 5,
     })
@@ -94,26 +95,104 @@ def test_technical_agent_generates_summary():
         "ticker": "TEST",
         "ohlcv": _sample_ohlcv(40),
     })
-    assert "Price" in report.classical_summary
-    assert "support" in report.key_levels
+    assert report.indicators.latest_close is not None
+    assert "summary" in report.llm_report
 
 def test_pipeline_runs_end_to_end():
-    responses = [
-        "Bullish argument with strong evidence.",
-        "Bearish argument citing risks.",
-        "{\"winning_argument\": \"Bullish\", \"conviction_level\": \"Medium\", \"summary\": \"Bullish wins\", \"key_evidence\": [\"Evidence\"]}",
-        "{\"strategy\": \"Call Spread\", \"direction\": \"Bullish\", \"expiration\": \"30D\", \"strikes\": [110, 120]}",
-    ]
+    def side_effect(messages, *args, **kwargs):
+        user_payload = messages[-1]["content"] if messages else ""
+        if '"stance": "Bullish"' in user_payload:
+            return "Bullish argument with strong evidence."
+        if '"stance": "Bearish"' in user_payload:
+            return "Bearish argument citing risks."
+        if '"transcript"' in user_payload:
+            return json.dumps({
+                "winning_argument": "Bullish",
+                "conviction_level": "Medium",
+                "summary": "Bullish wins",
+                "key_evidence": ["Evidence"],
+            })
+        if '"options_chain"' in user_payload:
+            return json.dumps({
+                "strategy_name": "Call Spread",
+                "action": "BUY_TO_OPEN",
+                "quantity": 1,
+                "trade_legs": [
+                    {
+                        "contract_symbol": "TESTC1",
+                        "type": "CALL",
+                        "action": "BUY",
+                        "strike_price": 110,
+                        "expiration_date": "2024-12-20",
+                        "quantity": 1,
+                        "key_greeks_at_selection": {"delta": 0.5, "gamma": 0.1, "theta": -0.02, "vega": 0.05, "impliedVolatility": 0.3},
+                    }
+                ],
+                "notes": "Structured via test double.",
+            })
+        if "\"articles\"" in user_payload:
+            return json.dumps({
+                "articles": [
+                    {"title": "Analysts upgrade", "sentiment_score": 0.4, "rationale": "Positive analyst commentary."}
+                ],
+                "overall_sentiment_score": 0.4,
+                "overall_summary": "Sentiment positive.",
+            })
+        if "\"indicators\"" in user_payload:
+            return json.dumps({
+                "technical_bias": "bullish",
+                "primary_trend": "Uptrend above moving averages.",
+                "momentum": "RSI rising.",
+                "volatility_levels": "Bands expanding.",
+                "key_levels": {"support": 100, "resistance": 120},
+                "summary": "Momentum supportive of upside continuation.",
+            })
+        if "MD&A section" in user_payload:
+            return json.dumps({
+                "tone": "optimistic",
+                "performance_drivers": ["Strong demand"],
+                "forward_looking": ["Investing in R&D"],
+            })
+        if "Risk Factors" in user_payload:
+            return json.dumps([
+                {"risk": "Competition", "category": "Market", "rationale": "Peers investing heavily."}
+            ])
+        if "\"qualitative_summaries\"" in user_payload:
+            return json.dumps({
+                "swot": {
+                    "strengths": ["Brand loyalty"],
+                    "weaknesses": ["High costs"],
+                    "opportunities": ["New markets"],
+                    "threats": ["Competition"],
+                },
+                "financial_health": "Strong",
+                "overall_thesis": "bullish",
+                "justification": "Solid growth trajectory.",
+            })
+        return "Fallback response"
 
-    def side_effect(*args, **kwargs):
-        return responses.pop(0)
+    class DummyResponse:
+        def __init__(self) -> None:
+            self.text = "ITEM 7. Management discussion\nItem 8. Financial Statements"
+            self.headers = {"Content-Type": "text/plain"}
+
+        def raise_for_status(self) -> None:
+            return None
 
     with patch("src.tools.llm.LLMClient.chat", side_effect=side_effect), \
         patch("src.orchestrator.fetch_ohlcv", return_value=_sample_ohlcv(90)), \
         patch("src.orchestrator.fetch_options_chain", return_value=_sample_options_chain()), \
         patch("src.orchestrator.fetch_news", return_value=[{"title": "Analysts upgrade"}]), \
-        patch("src.orchestrator.fetch_company_overview", return_value={"trailingPE": 20, "grossMargins": 0.45, "debtToEquity": 0.5}):
+        patch("src.orchestrator.fetch_company_overview", return_value={"trailingPE": 20, "grossMargins": 0.45, "debtToEquity": 0.5}), \
+        patch("src.orchestrator.fetch_fundamental_bundle", return_value={
+            "info": {"trailingPE": 20, "priceToSalesTrailing12Months": 4.0, "debtToEquity": 0.5},
+            "financials": pd.DataFrame({}),
+            "balance_sheet": pd.DataFrame({}),
+            "cashflow": pd.DataFrame({}),
+            "filings": pd.DataFrame({"filingType": ["10-K"], "filingDate": ["2024-01-01"], "linkToTxt": ["https://example.com/filing"]}),
+        }), \
+        patch("src.agents.fundamental.requests.get", return_value=DummyResponse()):
 
         results = run_pipeline("TEST")
     assert "trade_proposal" in results
-    assert results["trade_proposal"].strategy == "Call Spread"
+    assert results["trade_proposal"].trade_legs

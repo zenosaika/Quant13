@@ -1,1 +1,1 @@
-"""Tool interfaces and mock implementations."""
+"""Tool interfaces and integrations used across agents."""

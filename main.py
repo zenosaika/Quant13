@@ -12,7 +12,7 @@ def main() -> None:
     args = parser.parse_args()
 
     results = run_pipeline(args.ticker.upper())
-    trade = results["trade_proposal"].dict()
+    trade = results["trade_proposal"].model_dump()
     print("Final Trade Proposal:\n" + json.dumps(trade, indent=2))
 
 

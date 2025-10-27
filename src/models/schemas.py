@@ -1,16 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
-
-
-class NewsHeadline(BaseModel):
-    headline: str
-    summary: Optional[str] = None
-    link: Optional[str] = None
-    published_at: Optional[str] = None
-    score: Optional[float] = None
 
 
 class VolatilityReport(BaseModel):
@@ -22,27 +14,76 @@ class VolatilityReport(BaseModel):
     term_structure: str
 
 
+class ArticleSentiment(BaseModel):
+    title: str
+    publisher: Optional[str] = None
+    link: Optional[str] = None
+    published_at: Optional[str] = None
+    sentiment_score: float
+    rationale: Optional[str] = None
+
+
 class SentimentReport(BaseModel):
     agent: str = Field(default="SentimentAgent")
     ticker: str
     overall_sentiment_score: float
-    key_headlines: List[NewsHeadline]
-    kg_derived_insights: Optional[List[dict]] = None
+    overall_summary: str
+    articles: List[ArticleSentiment]
+
+
+class TechnicalIndicators(BaseModel):
+    latest_close: Optional[float] = None
+    price_date: Optional[str] = None
+    SMA_50: Optional[Dict[str, Any]] = None
+    SMA_200: Optional[Dict[str, Any]] = None
+    EMA_20: Optional[Dict[str, Any]] = None
+    Bollinger_Bands: Dict[str, Any] = Field(default_factory=dict)
+    MACD_Signal: Dict[str, Any] = Field(default_factory=dict)
+    RSI: Dict[str, Any] = Field(default_factory=dict)
+    Supertrend_Signal: Dict[str, Any] = Field(default_factory=dict)
+    OBV_Trend: Dict[str, Any] = Field(default_factory=dict)
+    recent_candlestick_patterns: List[Dict[str, Any]] = Field(default_factory=list)
+    derived_signals: List[str] = Field(default_factory=list)
+    key_levels: Dict[str, Optional[float]] = Field(default_factory=dict)
 
 
 class TechnicalReport(BaseModel):
     agent: str = Field(default="TechnicalAnalyst")
     ticker: str
-    classical_summary: str
-    key_levels: dict
-    dl_oracle_forecast: dict
+    indicators: TechnicalIndicators
+    llm_report: Dict[str, Any] = Field(default_factory=dict)
+    llm_raw: Optional[str] = None
+
+
+class FinancialRatios(BaseModel):
+    pe_ratio: Optional[float] = None
+    ps_ratio: Optional[float] = None
+    debt_to_equity: Optional[float] = None
+    current_ratio: Optional[float] = None
+
+
+class FinancialTrend(BaseModel):
+    metric: str
+    values: Dict[str, Optional[float]] = Field(default_factory=dict)
+    trend_direction: Optional[str] = None
+    compound_growth_rate: Optional[float] = None
+
+
+class QualitativeSummary(BaseModel):
+    mdna_summary: Optional[Dict[str, Any]] = None
+    risk_factors: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class FundamentalReport(BaseModel):
     agent: str = Field(default="FundamentalAnalyst")
     ticker: str
-    financial_health: dict
-    kg_derived_swot: dict
+    generated_at: str
+    data_source: str
+    business_overview: Dict[str, Any] = Field(default_factory=dict)
+    financial_ratios: FinancialRatios
+    financial_trends: List[FinancialTrend]
+    qualitative_summary: QualitativeSummary
+    llm_synthesis: Dict[str, Any] = Field(default_factory=dict)
 
 
 class DebateArgument(BaseModel):
@@ -57,11 +98,22 @@ class TradeThesis(BaseModel):
     key_evidence: List[str]
 
 
+class TradeLeg(BaseModel):
+    contract_symbol: str
+    type: str
+    action: str
+    strike_price: float
+    expiration_date: str
+    quantity: int = 1
+    key_greeks_at_selection: Dict[str, Optional[float]] = Field(default_factory=dict)
+
+
 class TradeProposal(BaseModel):
-    strategy: str
-    direction: str
-    expiration: str
-    strikes: List[float]
+    agent: str = Field(default="TraderAgent")
+    strategy_name: str
+    action: str
+    quantity: int
+    trade_legs: List[TradeLeg]
     notes: Optional[str] = None
 
 

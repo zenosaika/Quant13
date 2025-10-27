@@ -1,17 +1,17 @@
 # Quant13
 
 ## Overview
-Quant13 is a hybrid multi-agent research and trading framework for equity options. The system orchestrates domain-specific analyst agents, a debate & decision layer, and a trader with risk management overlays. Early phases of the roadmap use deterministic mocks for complex external services (Knowledge Graph, Deep Learning Oracle) so the core framework can be developed and tested end-to-end before live integrations are introduced.
+Quant13 is a hybrid multi-agent research and trading framework for equity options. The system orchestrates domain-specific analyst agents, a debate & decision layer, and a trader with risk management overlays. The current implementation is fully data-driven: agents source live market data via `yfinance`, compute quantitative signals locally, and use OpenRouter LLM calls strictly for synthesis.
 
 ## Architecture Snapshot
-- **Data Pipeline**: Pulls OHLCV, options chain, news, and company overview data via `yfinance`, then enriches it with return features.
+- **Data Pipeline**: Pulls OHLCV, options chain, news, company fundamentals, filings, and financial statements via `yfinance`, then enriches them with return features and indicator bundles.
 - **Analyst Agents** (Pydantic-backed reports):
-  - *VolatilityModelingAgent* — computes realized volatility, IV rank, skew, and term structure; forecasts are mocked as configurable placeholders.
-  - *SentimentAgent* — scores headlines with simple keyword heuristics and triggers mocked Knowledge Graph alerts for extreme sentiment.
-  - *TechnicalAnalyst* — calculates EMA/RSI/MACD indicators, extracts key levels, and appends a mocked DL Oracle forecast.
-  - *FundamentalAnalyst* — surfaces basic valuation metrics from Yahoo fundamentals and combines them with a mocked Knowledge Graph SWOT summary.
+  - *VolatilityModelingAgent* — computes realized volatility, IV rank, skew, term structure, and classifies the realized vol trend.
+  - *SentimentAgent* — normalizes recent headlines/news, forwards them to the LLM for scoring, and aggregates a narrative-aware sentiment report.
+  - *TechnicalAnalyst* — generates an expanded indicator bundle (SMAs, EMA, Bollinger Bands, MACD, RSI, Supertrend, OBV, candlestick patterns), then prompts the LLM for synthesis of bias/levels.
+  - *FundamentalAnalyst* — caches analyses per ticker, calculates key ratios and multi-year trends, scrapes the latest SEC filings for MD&A/Risk sections, summarizes them with the LLM, and produces a full SWOT/thesis.
 - **Debate & Decision Layer**: Bullish and Bearish researcher agents argue via the OpenRouter LLM API, with a Moderator agent synthesizing the trade thesis.
-- **Trader Agent**: Converts the thesis and volatility context into a concrete option strategy proposal, again through the LLM (with deterministic fallback when no API key is provided).
+- **Trader Agent**: Consumes the trade thesis, volatility report, and full options chain to return executable option legs (strategy, strikes, greeks) via the LLM.
 - **Risk Management Team**: Applies lightweight safe/neutral/risky overlays to the proposed trade.
 
 All agent outputs conform to Pydantic models defined in `src/models/schemas.py`, ensuring type-safe message passing throughout the pipeline.
@@ -20,16 +20,18 @@ All agent outputs conform to Pydantic models defined in `src/models/schemas.py`,
 ```
 Quant13/
 ├── config/
-│   └── config.yaml          # Prompts, defaults, and mock payloads
+│   └── config.yaml          # Prompts, defaults, and data/agent configuration
 ├── src/
 │   ├── agents/              # Agent implementations (base, analysts, debate, trader, risk)
 │   ├── data/                # Data fetching & preprocessing utilities
 │   ├── models/              # Pydantic schemas
-│   ├── tools/               # LLM client + mocked KG/DL tools
+│   ├── tools/               # LLM client utilities
 │   ├── utils/               # Indicator helpers
 │   └── orchestrator.py      # End-to-end pipeline entrypoint
 ├── tests/
 │   └── test_agents.py       # Unit & orchestration tests
+├── cache/                   # Fundamental analysis cache (auto-created)
+├── results/                 # Timestamped agent and trade outputs (auto-created)
 ├── requirements.txt
 └── main.py                  # CLI runner
 ```
@@ -54,21 +56,24 @@ If the key is omitted, deterministic fallback responses keep the pipeline operat
 ## Configuration
 Modify `config/config.yaml` to tune:
 - LLM model, temperature, and prompt templates
-- Data lookback windows and news limits
-- Mock outputs for Knowledge Graph and DL Oracle tools
+- Data lookback windows, indicator windows, and news limits
+- Volatility lookbacks and sentiment/time filters
 - Risk management guidance text
 
 ## Running the Pipeline
 ```bash
 python main.py TICKER
 ```
-Output: a formatted JSON trade proposal driven by the orchestrator plus the underlying agent reports logged to stdout.
+Output: a formatted JSON trade proposal printed to stdout, plus timestamped JSON reports for each agent, thesis, trader decision, and risk overlay written to `results/<TICKER>_<YYYYMMDD_HHMMSS>/`.
 
 ## Testing
 ```bash
 .venv/bin/pytest
 ```
-The suite covers individual agent behaviors, indicator calculations, and a fully mocked end-to-end run of the orchestrator.
+The suite covers agent primitives, technical indicator generation, and an end-to-end orchestrator run under deterministic LLM mocks.
+
+## Utilities
+- `data_test.py` offers a quick sanity check for raw `yfinance` structures (OHLCV, options chains, news, info, filings) before extending agent logic.
 
 ## Roadmap Alignment
-This repository implements Phases 1–3 of the provided specification using mocked external services. Phase 4 will replace the placeholder Knowledge Graph and DL Oracle modules with live integrations, while Phase 5 will extend the system with portfolio construction, execution, and feedback agents.
+This repository now reflects the data-first evolution of the specification—mock services have been removed in favor of real market data, resilient scraping, and LLM synthesis. Future phases can build atop this foundation to add portfolio construction, execution, and feedback agents.

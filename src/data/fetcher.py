@@ -50,3 +50,61 @@ def fetch_company_overview(ticker: str) -> Dict[str, Any]:
     except Exception:  # pragma: no cover - network variability
         info = {}
     return info
+
+
+def fetch_fundamental_bundle(ticker: str) -> Dict[str, Any]:
+    ticker_obj = _create_ticker(ticker)
+    info: Dict[str, Any] = {}
+    financials = pd.DataFrame()
+    balance_sheet = pd.DataFrame()
+    cashflow = pd.DataFrame()
+    filings = pd.DataFrame()
+
+    try:
+        info = ticker_obj.get_info()
+    except Exception:  # noqa: BLE001
+        info = {}
+
+    try:
+        financials = ticker_obj.get_financials()
+    except Exception:  # noqa: BLE001
+        financials = pd.DataFrame()
+
+    try:
+        balance_sheet = ticker_obj.get_balance_sheet()
+    except Exception:  # noqa: BLE001
+        balance_sheet = pd.DataFrame()
+
+    try:
+        cashflow = ticker_obj.get_cashflow()
+    except Exception:  # noqa: BLE001
+        cashflow = pd.DataFrame()
+
+    filings = _fetch_filings(ticker_obj)
+
+    return {
+        "info": info,
+        "financials": financials,
+        "balance_sheet": balance_sheet,
+        "cashflow": cashflow,
+        "filings": filings,
+    }
+
+
+def _fetch_filings(ticker_obj: yf.Ticker) -> pd.DataFrame:
+    candidates = [
+        getattr(ticker_obj, "get_sec_filings", None),
+        getattr(ticker_obj, "get_filings", None),
+    ]
+    for func in candidates:
+        if callable(func):
+            try:
+                filings = func()
+            except Exception:  # noqa: BLE001
+                continue
+            if isinstance(filings, pd.DataFrame) and not filings.empty:
+                return filings
+    filings_attr = getattr(ticker_obj, "filings", None)
+    if isinstance(filings_attr, pd.DataFrame):
+        return filings_attr
+    return pd.DataFrame()

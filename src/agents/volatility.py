@@ -26,10 +26,11 @@ class VolatilityModelingAgent(Agent):
 
         skew_analysis = _compute_skew_analysis(options_chain, spot_price)
         term_structure = _compute_term_structure(options_chain)
+        forecast = _summarize_volatility_trend(realized_vol)
 
         return {
             "iv_rank": iv_rank,
-            "volatility_forecast": self.config.get("garch_forecast_placeholder", "Stable"),
+            "volatility_forecast": forecast,
             "skew_analysis": skew_analysis,
             "term_structure": term_structure,
         }
@@ -98,3 +99,22 @@ def _compute_term_structure(options_chain: Any) -> str:
     if front_ivs < back_ivs:
         return "Contango: Longer-dated options imply higher volatility than near-term contracts."
     return "Flat term structure between near and far expirations."
+
+
+def _summarize_volatility_trend(realized_vol: pd.Series) -> str:
+    series = realized_vol.dropna()
+    if len(series) < 10:
+        return "Insufficient data to assess realized volatility trend."
+    recent = series.tail(5).mean()
+    mid_term = series.tail(20).mean()
+    long_term = series.mean()
+
+    if recent > mid_term * 1.1:
+        return "Realized volatility is accelerating above its 1-month average."
+    if recent < mid_term * 0.9:
+        return "Realized volatility is compressing below its 1-month average."
+    if recent > long_term * 1.05:
+        return "Volatility holding marginally above long-run norms."
+    if recent < long_term * 0.95:
+        return "Volatility remains subdued versus long-run norms."
+    return "Volatility stable relative to recent history."

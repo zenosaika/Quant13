@@ -20,7 +20,8 @@ class RiskManagementTeam:
         else:
             adjustments.append(RiskAdjustment(profile="Safe", recommendation="Position size within standard risk parameters."))
 
-        adjustments.append(RiskAdjustment(profile="Neutral", recommendation=f"Ensure Greeks align with {conviction} conviction level."))
+        strategy = getattr(trade, "strategy_name", "the trade")
+        adjustments.append(RiskAdjustment(profile="Neutral", recommendation=f"Ensure {strategy} Greeks align with {conviction} conviction level."))
 
         if conviction in {"high", "elevated"}:
             adjustments.append(RiskAdjustment(profile="Risky", recommendation="Consider scaling into position if liquidity permits."))
