@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -19,6 +19,7 @@ class ArticleSentiment(BaseModel):
     publisher: Optional[str] = None
     link: Optional[str] = None
     published_at: Optional[str] = None
+    summary: Optional[str] = None
     sentiment_score: float
     rationale: Optional[str] = None
 
@@ -115,6 +116,11 @@ class TradeProposal(BaseModel):
     quantity: int
     trade_legs: List[TradeLeg]
     notes: Optional[str] = None
+    conviction_level: Optional[str] = None
+    generation_status: Literal["generated", "failed"] = "generated"
+    max_risk: Optional[float] = None
+    max_reward: Optional[float] = None
+    net_premium: Optional[float] = None
 
 
 class RiskAdjustment(BaseModel):
@@ -125,3 +131,13 @@ class RiskAdjustment(BaseModel):
 class RiskAssessment(BaseModel):
     adjustments: List[RiskAdjustment]
     final_recommendation: str
+
+
+class BacktestReport(BaseModel):
+    agent: str = Field(default="BacktesterAgent")
+    ticker: str
+    strategy_type: str
+    win_rate: float
+    simulated_trades: int
+    average_profit_pct: float
+    summary: str

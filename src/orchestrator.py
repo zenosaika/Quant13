@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,6 +7,7 @@ from typing import Dict
 
 from src.agents.debate import DebateOrchestrator
 from src.agents.fundamental import FundamentalAnalyst
+from src.agents.backtester import BacktesterAgent
 from src.agents.risk import RiskManagementTeam
 from src.agents.sentiment import SentimentAgent
 from src.agents.technical import TechnicalAnalyst
@@ -24,6 +23,11 @@ from src.data.fetcher import (
 )
 from src.data.preprocessing import compute_returns
 
+try:
+    from generate_report import generate_pdf_report
+except ModuleNotFoundError:  # pragma: no cover - fallback for environments without report module
+    generate_pdf_report = None  # type: ignore
+
 
 def run_pipeline(ticker: str) -> Dict[str, object]:
     config = load_config()
@@ -31,6 +35,7 @@ def run_pipeline(ticker: str) -> Dict[str, object]:
 
     ohlcv = fetch_ohlcv(ticker, lookback)
     ohlcv = compute_returns(ohlcv)
+    spot_price = float(ohlcv["close"].iloc[-1])
     options_chain = fetch_options_chain(ticker)
     news = fetch_news(ticker, config["data"]["news_limit"])
     fundamental_bundle = fetch_fundamental_bundle(ticker)
@@ -67,8 +72,20 @@ def run_pipeline(ticker: str) -> Dict[str, object]:
     debate_team = DebateOrchestrator(config["agents"]["debate"])
     trade_thesis = debate_team.conduct_debate(reports_payload)
 
-    trader = TraderAgent(config["agents"]["trader"]["prompt"])
-    trade_proposal = trader.propose_trade(trade_thesis, volatility_report, options_chain)
+    backtester = BacktesterAgent(config["agents"].get("backtester", {}))
+    backtest_state = dict(base_state)
+    backtest_state.update({
+        "trade_thesis": trade_thesis,
+        "volatility_report": volatility_report,
+        "sentiment_report": sentiment_report,
+        "technical_report": technical_report,
+        "fundamental_report": fundamental_report,
+    })
+    backtest_report = backtester.run(backtest_state)
+
+    trader = TraderAgent(config["agents"]["trader"])
+    trade_proposal = trader.propose_trade(trade_thesis, volatility_report, options_chain, spot_price)
+    trade_proposal = trade_proposal.model_copy(update={"conviction_level": trade_thesis.conviction_level})
 
     risk_team = RiskManagementTeam()
     risk_assessment = risk_team.assess(trade_proposal, trade_thesis, volatility_report)
@@ -81,15 +98,28 @@ def run_pipeline(ticker: str) -> Dict[str, object]:
         "trade_thesis": trade_thesis,
         "trade_proposal": trade_proposal,
         "risk_assessment": risk_assessment,
+        "backtest_report": backtest_report,
     }
 
-    results_directory = _persist_results(ticker, results)
+    results_directory, timestamp = _persist_results(ticker, results)
     results["results_path"] = str(results_directory) if results_directory else None
+    results["timestamp"] = timestamp
+
+    if generate_pdf_report and results_directory:
+        try:
+            pdf_path = generate_pdf_report(
+                ticker=ticker,
+                timestamp=timestamp,
+                base_results_dir=str(results_directory.parent),
+            )
+            results["report_pdf"] = pdf_path
+        except Exception as exc:  # pragma: no cover - non-critical failure path
+            results["report_pdf_error"] = str(exc)
 
     return results
 
 
-def _persist_results(ticker: str, results: Dict[str, object]) -> Path | None:
+def _persist_results(ticker: str, results: Dict[str, object]) -> tuple[Path | None, str]:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     base_dir = Path(__file__).resolve().parents[1] / "results"
     target_dir = base_dir / f"{ticker.upper()}_{timestamp}"
@@ -103,6 +133,7 @@ def _persist_results(ticker: str, results: Dict[str, object]) -> Path | None:
         "trade_thesis.json": results["trade_thesis"].model_dump(),
         "trade_decision.json": results["trade_proposal"].model_dump(),
         "risk_assessment.json": results["risk_assessment"].model_dump(),
+        "backtest_report.json": results["backtest_report"].model_dump(),
     }
 
     for filename, payload in artifacts.items():
@@ -112,4 +143,4 @@ def _persist_results(ticker: str, results: Dict[str, object]) -> Path | None:
         except OSError:
             continue
 
-    return target_dir
+    return target_dir, timestamp

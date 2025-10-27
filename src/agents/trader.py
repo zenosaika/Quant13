@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -10,8 +11,9 @@ from src.tools.llm import get_llm_client
 
 
 class TraderAgent:
-    def __init__(self, prompt: str) -> None:
-        self.prompt = prompt
+    def __init__(self, config: Dict[str, Any]) -> None:
+        self.config = config
+        self.prompt = config.get("prompt", "")
         self.llm = get_llm_client()
 
     def propose_trade(
@@ -19,33 +21,77 @@ class TraderAgent:
         thesis: TradeThesis,
         volatility_report: VolatilityReport,
         options_chain: List[Dict[str, Any]],
+        spot_price: float,
     ) -> TradeProposal:
         payload = {
             "thesis": thesis.model_dump(),
             "volatility": volatility_report.model_dump(),
-            "options_chain": _serialize_options_chain(options_chain),
+            "underlying_price": spot_price,
+            "options_chain": _serialize_options_chain(options_chain, spot_price),
         }
+        strategy_guidance = self._build_strategy_guidance(volatility_report)
+        system_prompt = f"{self.prompt.rstrip()}" + strategy_guidance
+
         messages = [
-            {"role": "system", "content": self.prompt},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": json.dumps(payload)},
         ]
         raw = self.llm.chat(messages, temperature=0.2)
-        data = _safe_json_loads(raw, options_chain)
+        data = _safe_json_loads(raw, options_chain, spot_price)
         return TradeProposal(**data)
 
+    def _build_strategy_guidance(self, volatility_report: VolatilityReport) -> str:
+        prefs = self.config.get("strategy_preferences") if isinstance(self.config, dict) else None
+        if not isinstance(prefs, dict):
+            return ""
+        iv_rank = volatility_report.iv_rank
+        if iv_rank is None:
+            return ""
+        high_threshold = prefs.get("high_iv_rank_threshold")
+        low_threshold = prefs.get("low_iv_rank_threshold")
+        guidance: Optional[str] = None
 
-def _serialize_options_chain(options_chain: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if isinstance(high_threshold, (int, float)) and iv_rank >= float(high_threshold):
+            bias = prefs.get("high_iv_bias")
+            guidance = self._format_bias_guidance(iv_rank, bias, regime="high")
+        elif isinstance(low_threshold, (int, float)) and iv_rank <= float(low_threshold):
+            bias = prefs.get("low_iv_bias")
+            guidance = self._format_bias_guidance(iv_rank, bias, regime="low")
+
+        if not guidance:
+            return ""
+        return f"\n\n{guidance}"
+
+    def _format_bias_guidance(self, iv_rank: float, bias: Optional[str], regime: str) -> Optional[str]:
+        if not isinstance(bias, str) or not bias:
+            return None
+        bias_lower = bias.lower()
+        if bias_lower == "credit":
+            requirement = "credit spreads or premium-selling structures that collect net credit."
+        elif bias_lower == "debit":
+            requirement = "debit spreads or long optionality structures that pay net debit."
+        else:
+            requirement = f"strategies aligned with a {bias_lower} bias."
+
+        descriptor = "elevated" if regime == "high" else "suppressed"
+        return (
+            f"STRATEGY BIAS: IV Rank is {descriptor} at {iv_rank:.1f}. "
+            f"You MUST prioritize {requirement} Deviations require explicit justification."
+        )
+
+
+def _serialize_options_chain(options_chain: List[Dict[str, Any]], spot_price: float) -> List[Dict[str, Any]]:
     serialized = []
     for entry in options_chain:
         serialized.append({
             "expiration": entry.get("expiration"),
-            "calls": _serialize_option_side(entry.get("calls")),
-            "puts": _serialize_option_side(entry.get("puts")),
+            "calls": _serialize_option_side(entry.get("calls"), spot_price),
+            "puts": _serialize_option_side(entry.get("puts"), spot_price),
         })
     return serialized
 
 
-def _serialize_option_side(df: Any, limit: int = 10) -> List[Dict[str, Any]]:
+def _serialize_option_side(df: Any, spot_price: float, limit: int = 12) -> List[Dict[str, Any]]:
     if not isinstance(df, pd.DataFrame) or df.empty:
         return []
     allowed_columns = [
@@ -64,18 +110,22 @@ def _serialize_option_side(df: Any, limit: int = 10) -> List[Dict[str, Any]]:
             "volume",
         }
     ]
-    trimmed = df[allowed_columns].head(limit).copy()
-    return trimmed.fillna(0.0).to_dict(orient="records")
+    working = df.copy()
+    working["_distance"] = (working["strike"] - spot_price).abs()
+    trimmed = working.sort_values("_distance").head(limit)
+    trimmed = trimmed[allowed_columns]
+    trimmed = trimmed.where(pd.notna(trimmed), None)
+    return trimmed.to_dict(orient="records")
 
 
-def _safe_json_loads(raw: str, options_chain: List[Dict[str, Any]]) -> Dict[str, Any]:
-    try:
-        data = json.loads(raw)
-        if isinstance(data, dict) and {"strategy_name", "action", "trade_legs"} <= set(data):
-            return data
-    except json.JSONDecodeError:
-        pass
-    fallback_leg = _construct_fallback_leg(options_chain)
+def _safe_json_loads(raw: str, options_chain: List[Dict[str, Any]], spot_price: float) -> Dict[str, Any]:
+    parsed, structured = _load_trade_json(raw)
+    if parsed:
+        proposal = _coerce_trade_proposal(parsed, structured, raw)
+        if proposal:
+            return proposal
+
+    fallback_leg = _construct_fallback_leg(options_chain, spot_price)
     return {
         "strategy_name": "Long Call",
         "action": "BUY_TO_OPEN",
@@ -85,24 +135,176 @@ def _safe_json_loads(raw: str, options_chain: List[Dict[str, Any]]) -> Dict[str,
     }
 
 
-def _construct_fallback_leg(options_chain: List[Dict[str, Any]]) -> Dict[str, Any]:
+JSON_BLOCK_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.DOTALL)
+
+
+def _load_trade_json(raw: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    candidate: Optional[Dict[str, Any]] = None
+    structured: Optional[Dict[str, Any]] = None
+    if not raw:
+        return None, None
+
+    try:
+        data = json.loads(raw)
+        candidate = data
+    except json.JSONDecodeError:
+        candidate = None
+
+    if not candidate:
+        for match in JSON_BLOCK_RE.finditer(raw):
+            block = match.group(1)
+            try:
+                candidate = json.loads(block)
+                break
+            except json.JSONDecodeError:
+                continue
+
+    if isinstance(candidate, dict) and "trade_proposal" in candidate and isinstance(candidate["trade_proposal"], dict):
+        structured = candidate["trade_proposal"]
+    elif isinstance(candidate, dict):
+        structured = candidate
+    else:
+        structured = None
+
+    return candidate if isinstance(candidate, dict) else None, structured
+
+
+def _coerce_trade_proposal(candidate: Dict[str, Any], structured: Optional[Dict[str, Any]], raw: str) -> Optional[Dict[str, Any]]:
+    trade_info = structured or candidate
+    if not isinstance(trade_info, dict):
+        return None
+
+    trade_legs_input = trade_info.get("trade_legs")
+    if not isinstance(trade_legs_input, list) or not trade_legs_input:
+        return None
+
+    strategy = trade_info.get("strategy") or trade_info.get("strategy_name") or "Options Strategy"
+    direction_text = trade_info.get("direction")
+    action_raw = trade_info.get("action")
+    quantity = trade_info.get("quantity") or trade_info.get("contracts") or 1
+    expiration = trade_info.get("expiration_date") or trade_info.get("expiration")
+    if not expiration and isinstance(trade_info.get("expiration_selection"), dict):
+        expiration = trade_info["expiration_selection"].get("date")
+    net_flow = (trade_info.get("net_credit_debit") or "").lower()
+    action = None
+    if isinstance(action_raw, str):
+        action = action_raw.upper().replace(" ", "_")
+    if not action:
+        action = "SELL_TO_OPEN" if "credit" in net_flow else "BUY_TO_OPEN"
+
+    normalized_legs: List[Dict[str, Any]] = []
+    for leg in trade_legs_input:
+        if not isinstance(leg, dict):
+            continue
+        normalized = _normalize_leg(leg, expiration)
+        if normalized:
+            normalized_legs.append(normalized)
+
+    if not normalized_legs:
+        return None
+
+    notes_payload = raw.strip()
+    if "```json" not in notes_payload:
+        try:
+            notes_payload = f"{notes_payload}\n```json\n{json.dumps(trade_info, ensure_ascii=False)}\n```"
+        except (TypeError, ValueError):
+            pass
+
+    return {
+        "strategy_name": strategy,
+        "action": action,
+        "quantity": int(quantity),
+        "trade_legs": normalized_legs,
+        "notes": notes_payload,
+    }
+
+
+def _normalize_leg(leg: Dict[str, Any], fallback_expiration: Optional[str]) -> Optional[Dict[str, Any]]:
+    contract = leg.get("contract_symbol") or leg.get("contractSymbol")
+    strike = leg.get("strike") or leg.get("strike_price")
+    if strike is None:
+        try:
+            strike = float(leg.get("strikePrice"))
+        except (TypeError, ValueError):
+            strike = None
+    if not contract and strike is None:
+        return None
+
+    action_raw = leg.get("action") or leg.get("direction") or "BUY"
+    action_normalized = "BUY"
+    if isinstance(action_raw, str):
+        upper = action_raw.upper()
+        if "SELL" in upper or "WRITE" in upper:
+            action_normalized = "SELL"
+        elif "BUY" in upper or "LONG" in upper:
+            action_normalized = "BUY"
+    action = action_normalized
+
+    option_type = leg.get("option_type") or leg.get("type") or "CALL"
+    option_type = option_type.upper()
+
+    leg_expiration = leg.get("expiration") or leg.get("expiration_date") or fallback_expiration or ""
+    try:
+        quantity = int(leg.get("contracts") or leg.get("quantity") or 1)
+    except (TypeError, ValueError):
+        quantity = 1
+
+    try:
+        strike_price = float(strike) if strike is not None else None
+    except (TypeError, ValueError):
+        strike_price = None
+
+    key_greeks = leg.get("key_greeks_at_selection")
+    if not isinstance(key_greeks, dict):
+        key_greeks = {}
+
+    return {
+        "contract_symbol": contract or "",
+        "type": option_type,
+        "action": action,
+        "strike_price": strike_price,
+        "expiration_date": leg_expiration,
+        "quantity": quantity,
+        "key_greeks_at_selection": key_greeks,
+    }
+
+
+def _construct_fallback_leg(options_chain: List[Dict[str, Any]], spot_price: float) -> Dict[str, Any]:
+    best_candidate: Optional[Dict[str, Any]] = None
+    best_distance = float("inf")
+
     for entry in options_chain:
         calls = entry.get("calls")
         if isinstance(calls, pd.DataFrame) and not calls.empty:
-            row = calls.iloc[0]
-            return {
-                "contract_symbol": row.get("contractSymbol", ""),
-                "type": "CALL",
-                "action": "BUY",
-                "strike_price": float(row.get("strike", 0.0)),
-                "expiration_date": entry.get("expiration", ""),
-                "quantity": 1,
-                "key_greeks_at_selection": {
-                    "delta": float(row.get("delta", 0.0) or 0.0),
-                    "gamma": float(row.get("gamma", 0.0) or 0.0),
-                    "theta": float(row.get("theta", 0.0) or 0.0),
-                    "vega": float(row.get("vega", 0.0) or 0.0),
-                    "impliedVolatility": float(row.get("impliedVolatility", 0.0) or 0.0),
-                },
-            }
-    return {}
+            working = calls.copy()
+            working["_distance"] = (working["strike"] - spot_price).abs()
+            row = working.sort_values("_distance").iloc[0]
+            distance = float(row["_distance"])
+            if distance < best_distance:
+                best_distance = distance
+                best_candidate = {
+                    "contract_symbol": row.get("contractSymbol", ""),
+                    "type": "CALL",
+                    "action": "BUY",
+                    "strike_price": float(row.get("strike", spot_price)),
+                    "expiration_date": entry.get("expiration", ""),
+                    "quantity": 1,
+                    "key_greeks_at_selection": {
+                        "delta": _clean_float(row.get("delta")),
+                        "gamma": _clean_float(row.get("gamma")),
+                        "theta": _clean_float(row.get("theta")),
+                        "vega": _clean_float(row.get("vega")),
+                        "impliedVolatility": _clean_float(row.get("impliedVolatility")),
+                    },
+                }
+
+    return best_candidate or {}
+
+
+def _clean_float(value: Any) -> Optional[float]:
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None

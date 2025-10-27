@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML
 
+from src.tools.llm import get_llm_client
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 REPORT_FILES: Dict[str, str] = {
@@ -26,6 +28,7 @@ REPORT_FILES: Dict[str, str] = {
     "volatility_report": "volatility_report.json",
     "sentiment_report": "sentiment_report.json",
     "risk_assessment": "risk_assessment.json",
+    "backtest_report": "backtest_report.json",
 }
 
 JSON_BLOCK_RE = re.compile(r"```json\s*(.*?)\s*```", re.DOTALL)
@@ -136,6 +139,21 @@ def format_date(value: Optional[Any]) -> str:
     return dt.strftime("%B %d, %Y")
 
 
+def _calculate_dte(expiration: Optional[Any], report_generated_at: Optional[Any]) -> Optional[int]:
+    exp_dt: Optional[datetime] = None
+    if isinstance(expiration, str):
+        exp_dt = parse_iso_datetime(expiration)
+    elif isinstance(expiration, datetime):
+        exp_dt = expiration
+    base_dt = parse_iso_datetime(report_generated_at) if isinstance(report_generated_at, str) else None
+    if base_dt is None:
+        base_dt = datetime.now()
+    if exp_dt is None:
+        return None
+    delta = exp_dt.date() - base_dt.date()
+    return max(delta.days, 0)
+
+
 def format_currency(value: Any, decimals: int = 2) -> str:
     if value is None:
         return "N/A"
@@ -233,6 +251,7 @@ def extract_trade_summary(trade_decision: Dict[str, Any]) -> Dict[str, Any]:
         "direction": None,
         "holding_period": None,
         "cost_per_contract": None,
+        "computed_dte": None,
     }
     notes = trade_decision.get("notes")
     proposal: Dict[str, Any] = {}
@@ -268,6 +287,8 @@ def extract_trade_summary(trade_decision: Dict[str, Any]) -> Dict[str, Any]:
         if stripped:
             summary["justification"] = stripped
     summary["justification"] = summary["justification"] or trade_decision.get("strategy_rationale")
+    expiration = get_nested(trade_decision, ["trade_legs", 0, "expiration_date"])
+    summary["computed_dte"] = _calculate_dte(expiration, trade_decision.get("generated_at"))
     return summary
 
 
@@ -313,7 +334,16 @@ def build_trade_section(reports: Dict[str, Any], derived: Dict[str, Any], summar
     summary_details = summary.get("details", {}) or {}
     direction = summary.get("direction") or summary_details.get("direction") or decision.get("action")
     strategy = summary_details.get("strategy") or decision.get("strategy_name")
-    conviction = summary.get("conviction") or summary_details.get("conviction") or get_nested(reports, ["trade_thesis", "conviction_level"])
+    conviction = (
+        decision.get("conviction_level")
+        or summary.get("conviction")
+        or summary_details.get("conviction")
+        or get_nested(reports, ["trade_thesis", "conviction_level"])
+    )
+    conviction = conviction or get_nested(decision, ["conviction_level"])
+    thesis_conviction = get_nested(reports, ["trade_thesis", "conviction_level"])
+    if conviction and thesis_conviction and humanize_phrase(conviction) != humanize_phrase(thesis_conviction):
+        conviction = thesis_conviction
     highlights: List[Dict[str, str]] = []
     proposal = summary_details
     underlying_price = proposal.get("underlying_price")
@@ -322,9 +352,14 @@ def build_trade_section(reports: Dict[str, Any], derived: Dict[str, Any], summar
     expiration = proposal.get("expiration_date") or get_nested(decision, ["trade_legs", 0, "expiration_date"])
     if expiration:
         highlights.append({"label": "Target Expiration", "value": format_date(expiration)})
+    computed_dte = summary.get("computed_dte")
+    if computed_dte is None:
+        computed_dte = _calculate_dte(expiration, decision.get("generated_at"))
+    if computed_dte is not None:
+        highlights.append({"label": "Days to Expiration", "value": f"{computed_dte} days"})
     holding = summary.get("holding_period")
-    if holding:
-        highlights.append({"label": "Days to Expiration", "value": f"{holding} days"})
+    if holding and computed_dte is None:
+        highlights.append({"label": "Days to Expiration (Agent)", "value": f"{holding} days"})
     cost = summary.get("cost_per_contract")
     if cost:
         highlights.append({"label": "Est. Cost / Contract", "value": format_currency(cost)})
@@ -385,8 +420,15 @@ def build_trade_section(reports: Dict[str, Any], derived: Dict[str, Any], summar
 def extract_headline(text: Optional[str]) -> str:
     if not text:
         return ""
-    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
-    return sentences[0] if sentences else text.strip()
+    stripped = strip_code_blocks(text)
+    stripped = stripped.strip()
+    stripped = re.sub(r"^#+\s*", "", stripped)
+    if not stripped:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", stripped)
+    headline = sentences[0] if sentences else stripped
+    headline = re.sub(r"^#+\s*", "", headline)
+    return clean_text(headline)
 
 
 def build_thesis_section(reports: Dict[str, Any]) -> Dict[str, Any]:
@@ -418,6 +460,7 @@ def build_thesis_section(reports: Dict[str, Any]) -> Dict[str, Any]:
             if k not in {"key_evidence", "summary"} and isinstance(v, (str, int, float, list, dict))
         }
     plan_rows = flatten_details(thesis_details, skip_keys={"trade_thesis", "conviction"}) if thesis_details else []
+    conviction = humanize_phrase(primary_payload.get("conviction") or thesis.get("conviction_level"))
     headline = extract_headline(narrative_plain)
     return {
         "headline": headline,
@@ -425,6 +468,7 @@ def build_thesis_section(reports: Dict[str, Any]) -> Dict[str, Any]:
         "narrative_plain": narrative_plain or "",
         "evidence": evidence_items,
         "plan_rows": plan_rows,
+        "conviction": conviction,
     }
 
 
@@ -636,6 +680,31 @@ def build_risk_section(reports: Dict[str, Any]) -> Dict[str, Any]:
     return {"adjustments": adjustments, "final": risk.get("final_recommendation")}
 
 
+def build_backtest_section(reports: Dict[str, Any]) -> Dict[str, Any]:
+    backtest = reports.get("backtest_report", {}) or {}
+    metrics: List[Dict[str, str]] = []
+    if isinstance(backtest, dict) and backtest:
+        metrics.append({
+            "label": "Win Rate",
+            "value": format_percentage(backtest.get("win_rate")),
+        })
+        metrics.append({
+            "label": "Simulated Trades",
+            "value": format_number(backtest.get("simulated_trades"), 0),
+        })
+        metrics.append({
+            "label": "Average Profit %",
+            "value": format_percentage(backtest.get("average_profit_pct")),
+        })
+    summary = backtest.get("summary") if isinstance(backtest, dict) else ""
+    strategy_type = backtest.get("strategy_type") if isinstance(backtest, dict) else ""
+    return {
+        "strategy_type": humanize_phrase(strategy_type),
+        "summary": summary or "Historical simulation not available for this run.",
+        "metrics": [item for item in metrics if item["value"] != "N/A"],
+    }
+
+
 def build_visual_assets(reports: Dict[str, Any]) -> Dict[str, Any]:
     trends = get_nested(reports, ["fundamental_report", "financial_trends"], [])
     charts: List[Dict[str, str]] = []
@@ -692,6 +761,11 @@ def build_executive_summary(
     direction = trade_section.get("direction")
     strategy = trade_section.get("strategy")
     conviction = trade_section.get("conviction")
+    thesis_conviction = thesis_section.get("conviction") if isinstance(thesis_section, dict) else None
+    if thesis_conviction is None:
+        thesis_conviction = get_nested(fundamentals, ["trade_thesis", "conviction_level"])
+    if thesis_conviction and conviction and humanize_phrase(conviction) != humanize_phrase(thesis_conviction):
+        conviction = humanize_phrase(thesis_conviction)
     if direction or strategy:
         conviction_text = f" ({conviction} conviction)" if conviction else ""
         bullets.append(clean_text(f"{direction or 'Trade'} {strategy or ''}{conviction_text}"))
@@ -711,7 +785,8 @@ def build_executive_summary(
         bullets.append(f"Management tone: {mdna_tone}")
     if volatility.get("forecast"):
         bullets.append(volatility["forecast"])
-    headline = thesis_section.get("headline") or direction or "Trade Summary"
+    headline = clean_text(thesis_section.get("headline") or direction or "Trade Summary")
+    headline = re.sub(r"^#+\s*", "", headline).strip()
     bullets = [clean_text(item) for item in bullets if clean_text(item)]
     return {"headline": headline, "bullets": bullets}
 
@@ -749,6 +824,7 @@ def build_report_context(reports: Dict[str, Any], ticker: str, timestamp: str, r
     volatility = build_volatility_section(reports, derived)
     sentiment = build_sentiment_section(reports, derived)
     risk_section = build_risk_section(reports)
+    backtest = build_backtest_section(reports)
     visuals = build_visual_assets(reports)
     executive_summary = build_executive_summary(trade_section, derived, thesis_section, fundamentals, volatility)
     market_snapshot_rows = build_market_snapshot_rows(derived)
@@ -770,9 +846,106 @@ def build_report_context(reports: Dict[str, Any], ticker: str, timestamp: str, r
         "volatility": volatility,
         "sentiment": sentiment,
         "risk": risk_section,
+        "backtest": backtest,
         "visuals": visuals,
         "disclaimer": "This report is prepared by the Quant13 multi-agent research framework and does not constitute investment advice.",
     }
+
+
+def compose_llm_sections(context: Dict[str, Any], reports: Dict[str, Any]) -> Dict[str, Any]:
+    llm_client = get_llm_client()
+    trade = context.get("trade", {}) or {}
+    payload = {
+        "ticker": context.get("ticker"),
+        "executive_summary": context.get("executive_summary"),
+        "trade": {
+            "strategy": trade.get("strategy"),
+            "direction": trade.get("direction"),
+            "conviction": trade.get("conviction"),
+            "highlights": trade.get("highlights"),
+        },
+        "backtest": context.get("backtest"),
+        "risk": context.get("risk"),
+    }
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a financial editor. Craft polished HTML sections for an options research report. "
+                "Respond with JSON containing 'hero_html' and 'sections'."
+            ),
+        },
+        {"role": "user", "content": json.dumps(payload)},
+    ]
+
+    parsed: Optional[Dict[str, Any]] = None
+    try:
+        response = llm_client.chat(messages, temperature=0.25)
+        parsed = json.loads(response)
+    except Exception:
+        parsed = None
+
+    content = _normalize_llm_sections(parsed)
+    if content is None:
+        content = _default_llm_sections(context)
+    return {"content": content}
+
+
+def _normalize_llm_sections(candidate: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not isinstance(candidate, dict):
+        return None
+    hero = candidate.get("hero_html")
+    sections = candidate.get("sections")
+    if not isinstance(hero, str) or not hero.strip():
+        return None
+    normalized_sections: List[Dict[str, str]] = []
+    if isinstance(sections, list):
+        for entry in sections:
+            if not isinstance(entry, dict):
+                continue
+            title = entry.get("title")
+            html = entry.get("html")
+            if isinstance(title, str) and isinstance(html, str):
+                normalized_sections.append({"title": title, "html": html})
+    return {"hero_html": hero, "sections": normalized_sections}
+
+
+def _default_llm_sections(context: Dict[str, Any]) -> Dict[str, Any]:
+    ticker = context.get("ticker") or "Ticker"
+    trade = context.get("trade", {}) or {}
+    executive = context.get("executive_summary", {}) or {}
+    backtest = context.get("backtest", {}) or {}
+    headline = executive.get("headline") or f"Options Outlook – {ticker}"
+    conviction = humanize_phrase(trade.get("conviction")) or "Not specified"
+    strategy = humanize_phrase(trade.get("strategy")) or "No strategy provided"
+    direction = humanize_phrase(trade.get("direction")) or "Neutral"
+    hero_html = (
+        f"<section><h1>Options Outlook – {ticker}</h1>"
+        f"<p>{clean_text(headline)}</p></section>"
+    )
+    sections: List[Dict[str, str]] = [
+        {
+            "title": "Trade Overview",
+            "html": (
+                f"<p><strong>Strategy:</strong> {strategy}<br />"
+                f"<strong>Direction:</strong> {direction}<br />"
+                f"<strong>Conviction:</strong> {conviction}</p>"
+            ),
+        }
+    ]
+    backtest_summary = backtest.get("summary") if isinstance(backtest, dict) else None
+    if backtest_summary:
+        sections.append({
+            "title": "Historical Simulation",
+            "html": f"<p>{clean_text(backtest_summary)}</p>",
+        })
+    risk_final = context.get("risk", {}).get("final") if isinstance(context.get("risk"), dict) else None
+    if risk_final:
+        sections.append({
+            "title": "Risk Desk Guidance",
+            "html": f"<p>{clean_text(risk_final)}</p>",
+        })
+    return {"hero_html": hero_html, "sections": sections}
 
 
 def render_html(context: Dict[str, Any]) -> str:

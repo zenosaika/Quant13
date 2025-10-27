@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from __future__ import annotations
-
 import json
 import re
 from dataclasses import dataclass
@@ -11,10 +9,10 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 from src.agents.base import Agent
+from src.data.sec import fetch_document_text
 from src.models.schemas import FundamentalReport, QualitativeSummary
 from src.tools.llm import get_llm_client
 
@@ -30,6 +28,8 @@ RISK_PROMPT = (
     "Categorize them if possible (e.g., Market, Regulatory, Operational). Respond with a JSON array of objects, "
     "each containing 'risk', 'category', and 'rationale'."
 )
+
+FUNDAMENTAL_REPORT_VERSION = 2
 
 
 @dataclass
@@ -49,22 +49,26 @@ class FundamentalAnalyst(Agent):
         ticker = state["ticker"]
         bundle = state.get("fundamental_bundle", {})
         info: Dict[str, Any] = bundle.get("info", {}) or state.get("company_overview", {})
-        filings: pd.DataFrame = bundle.get("filings", pd.DataFrame())
+        filings_data = bundle.get("filings")
         cache_path = self.settings.cache_dir / f"{ticker}.json"
 
-        latest_filing_date = _latest_filing_date(filings)
+        latest_filing_date = _latest_filing_date(filings_data)
         cached_report = _load_cached_report(cache_path)
 
-        if cached_report and not _is_cache_stale(cached_report, latest_filing_date):
+        if (
+            cached_report
+            and cached_report.get("data_version") == FUNDAMENTAL_REPORT_VERSION
+            and not _is_cache_stale(cached_report, latest_filing_date)
+        ):
             cached_report["data_source"] = "cache"
             return {"report": cached_report}
 
         ratios = _calculate_financial_ratios(info, bundle.get("balance_sheet"), bundle.get("financials"))
         trends = _calculate_financial_trends(bundle.get("financials"), bundle.get("cashflow"))
 
-        filing_texts = _collect_filing_sections(filings)
-        mdna_summary = _summarize_text(self.llm, MDNA_PROMPT, filing_texts.get("mdna"))
-        risk_summary = _summarize_text(self.llm, RISK_PROMPT, filing_texts.get("risks"))
+        filing_texts = _collect_filing_sections(filings_data)
+        mdna_summary = _summarize_text(self.llm, MDNA_PROMPT, filing_texts.get("mdna"), kind="mdna")
+        risk_summary = _summarize_text(self.llm, RISK_PROMPT, filing_texts.get("risks"), kind="risk")
 
         qualitative_summary = QualitativeSummary(
             mdna_summary=mdna_summary if isinstance(mdna_summary, dict) else {"summary": mdna_summary},
@@ -96,6 +100,7 @@ class FundamentalAnalyst(Agent):
             "ticker": ticker,
             "generated_at": generated_at,
             "data_source": "fresh",
+            "data_version": FUNDAMENTAL_REPORT_VERSION,
             "business_overview": synthesis_payload["business_overview"],
             "financial_ratios": ratios,
             "financial_trends": trends,
@@ -143,25 +148,37 @@ def _is_cache_stale(report: Dict[str, Any], latest_filing: Optional[datetime]) -
     return latest_filing > cached_dt
 
 
-def _latest_filing_date(filings: pd.DataFrame) -> Optional[datetime]:
-    if filings is None or filings.empty:
+def _latest_filing_date(filings: Any) -> Optional[datetime]:
+    if filings is None:
         return None
-    df = filings.copy()
-    df.columns = [col.lower() for col in df.columns]
-    type_column = next((col for col in ["filingtype", "type", "form"] if col in df.columns), None)
-    date_column = next((col for col in ["filingdate", "filed", "date", "acceptancedatetime"] if col in df.columns), None)
-    if not date_column:
-        return None
-    relevant = df
-    if type_column:
-        relevant = df[df[type_column].isin(["10-K", "10-Q"])]
-        if relevant.empty:
+
+    timestamps: List[pd.Timestamp] = []
+
+    if isinstance(filings, list):
+        for entry in filings:
+            if not isinstance(entry, dict):
+                continue
+            date_value = entry.get("filingDate") or entry.get("filed") or entry.get("date") or entry.get("reportDate")
+            ts = pd.to_datetime(date_value, errors="coerce", utc=True)
+            if pd.notna(ts):
+                timestamps.append(ts)
+    elif isinstance(filings, pd.DataFrame) and not filings.empty:
+        df = filings.copy()
+        df.columns = [col.lower() for col in df.columns]
+        date_column = next((col for col in ["filingdate", "filed", "date", "acceptancedatetime"] if col in df.columns), None)
+        if date_column:
+            type_column = next((col for col in ["filingtype", "type", "form"] if col in df.columns), None)
             relevant = df
-    dates = pd.to_datetime(relevant[date_column], errors="coerce", utc=True)
-    dates = dates.dropna()
-    if dates.empty:
+            if type_column:
+                relevant = df[df[type_column].isin(["10-K", "10-Q"])]
+                if relevant.empty:
+                    relevant = df
+            timestamps.extend(pd.to_datetime(relevant[date_column], errors="coerce", utc=True).dropna().tolist())
+
+    if not timestamps:
         return None
-    return dates.max().to_pydatetime()
+    latest = max(timestamps)
+    return latest.to_pydatetime()
 
 
 def _calculate_financial_ratios(info: Dict[str, Any], balance_sheet: Optional[pd.DataFrame], financials: Optional[pd.DataFrame]) -> Dict[str, Optional[float]]:
@@ -314,83 +331,171 @@ def _safe_float(value: Any) -> Optional[float]:
         return None
 
 
-def _collect_filing_sections(filings: pd.DataFrame) -> Dict[str, Optional[str]]:
+def _collect_filing_sections(filings: Any) -> Dict[str, Optional[str]]:
     sections = {"mdna": None, "risks": None}
-    if filings is None or filings.empty:
-        return sections
-    df = filings.copy()
-    df.columns = [col.lower() for col in df.columns]
-    type_col = next((col for col in ["filingtype", "type", "form"] if col in df.columns), None)
-    html_col = next((col for col in ["linktohtml", "pdfurl", "html", "url", "edgarurl"] if col in df.columns), None)
-    text_col = next((col for col in ["linktotxt", "txt", "text", "link"] if col in df.columns), None)
-    if not type_col or (not html_col and not text_col):
+    if filings is None:
         return sections
 
-    filings_sorted = df.copy()
-    date_col = next((col for col in ["filingdate", "filed", "date", "acceptancedatetime"] if col in df.columns), None)
-    if date_col:
-        filings_sorted[date_col] = pd.to_datetime(filings_sorted[date_col], errors="coerce")
-        filings_sorted = filings_sorted.sort_values(date_col, ascending=False)
+    entries: List[Dict[str, Any]] = []
+    if isinstance(filings, list):
+        entries = [entry for entry in filings if isinstance(entry, dict)]
+    elif isinstance(filings, pd.DataFrame) and not filings.empty:
+        entries = filings.to_dict("records")
 
-    latest_10k = filings_sorted[filings_sorted[type_col] == "10-K"].head(1)
-    latest_10q = filings_sorted[filings_sorted[type_col] == "10-Q"].head(1)
+    if not entries:
+        return sections
 
-    if not latest_10k.empty:
-        text = _download_filing_text(latest_10k.iloc[0], html_col, text_col)
-        sections["mdna"] = _extract_item_section(text, "ITEM 7.") or sections["mdna"]
-        sections["risks"] = _extract_item_section(text, "ITEM 1A.") or sections["risks"]
+    for entry in entries:
+        form = str(entry.get("form") or entry.get("filingtype") or entry.get("type") or entry.get("Form") or "").upper()
+        if form not in {"10-K", "10-Q"}:
+            continue
+        text = _download_filing_text(entry)
+        if not text:
+            continue
 
-    if sections["mdna"] is None and not latest_10q.empty:
-        text = _download_filing_text(latest_10q.iloc[0], html_col, text_col)
-        sections["mdna"] = _extract_item_section(text, "ITEM 2.") or text[:4000]
+        if form == "10-K":
+            if sections["mdna"] is None:
+                sections["mdna"] = _extract_item_section(
+                    text,
+                    "7",
+                    min_length=2000,
+                    keywords=["MANAGEMENT'S DISCUSSION", "MANAGEMENT’S DISCUSSION"],
+                ) or text[:12000]
+            if sections["risks"] is None:
+                sections["risks"] = _extract_item_section(
+                    text,
+                    "1A",
+                    min_length=1500,
+                    keywords=["RISK FACTORS"],
+                ) or text[:8000]
+        elif form == "10-Q":
+            if sections["mdna"] is None:
+                sections["mdna"] = _extract_item_section(
+                    text,
+                    "2",
+                    min_length=1500,
+                    keywords=["MANAGEMENT'S DISCUSSION", "MANAGEMENT’S DISCUSSION"],
+                ) or text[:8000]
+            if sections["risks"] is None:
+                sections["risks"] = _extract_item_section(
+                    text,
+                    "1A",
+                    min_length=1200,
+                    keywords=["RISK FACTORS"],
+                ) or text[:6000]
 
-    if sections["risks"] is None and not latest_10q.empty:
-        text = _download_filing_text(latest_10q.iloc[0], html_col, text_col)
-        section = _extract_item_section(text, "ITEM 1A.")
-        sections["risks"] = section or text[:4000]
+        if sections["mdna"] and sections["risks"]:
+            break
 
     return sections
 
 
-def _download_filing_text(row: pd.Series, html_col: Optional[str], text_col: Optional[str]) -> str:
-    url = None
-    if text_col and isinstance(row.get(text_col), str):
-        url = row[text_col]
-    elif html_col and isinstance(row.get(html_col), str):
-        url = row[html_col]
-    if not url:
+def _download_filing_text(entry: Any) -> str:
+    urls: List[str] = []
+    if isinstance(entry, dict):
+        candidates = {k.lower(): v for k, v in entry.items()}
+        for key in ("texturl", "linktotxt", "txt", "text"):
+            value = candidates.get(key)
+            if isinstance(value, str):
+                urls.append(value)
+        for key in ("documenturl", "html", "linktohtml", "pdfurl", "url", "edgarurl"):
+            value = candidates.get(key)
+            if isinstance(value, str) and value not in urls:
+                urls.append(value)
+    elif isinstance(entry, pd.Series):
+        for key in ["linktotxt", "txt", "text", "link", "texturl", "documenturl", "linktohtml", "pdfurl", "html", "url", "edgarurl", "linktotxt"]:
+            value = entry.get(key)
+            if isinstance(value, str):
+                urls.append(value)
+
+    if not urls:
         return ""
+
+    raw_html = fetch_document_text(urls)
+    if not raw_html:
+        return ""
+
     try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        content_type = response.headers.get("Content-Type", "")
-        if content_type.startswith("text/plain") or url.lower().endswith(".txt"):
-            return response.text
-        soup = BeautifulSoup(response.text, "html.parser")
-        return soup.get_text(separator="\n")
+        soup = BeautifulSoup(raw_html, "html.parser")
+        text = soup.get_text(separator="\n")
+        return text or raw_html
     except Exception:
-        return ""
+        return raw_html
 
 
-def _extract_item_section(text: str, item_header: str) -> Optional[str]:
+def _extract_item_section(
+    text: str,
+    item_number: str,
+    min_length: int = 1000,
+    keywords: Optional[List[str]] = None,
+) -> Optional[str]:
     if not text:
         return None
-    upper_text = text.upper()
-    header = item_header.upper()
-    start_idx = upper_text.find(header)
-    if start_idx == -1:
+    pattern = re.compile(rf"ITEM\s+{item_number}[A-Z]?\.", re.IGNORECASE)
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return _extract_by_keywords(text, keywords)
+
+    for match in matches:
+        start = match.start()
+        end = _find_next_item_boundary(text, match.end())
+        section = text[start:end].strip()
+        if len(section) >= min_length or _looks_like_section(section):
+            return section
+    # fall back to longest section if none meet criteria
+    candidates = [text[m.start():_find_next_item_boundary(text, m.end())].strip() for m in matches]
+    longest = max(candidates, key=len, default="")
+    if longest:
+        return longest
+    return _extract_by_keywords(text, keywords)
+
+
+def _find_next_item_boundary(text: str, start: int) -> int:
+    pattern = re.compile(r"\n\s*ITEM\s+\d+[A-Z]?\.", re.IGNORECASE)
+    match = pattern.search(text, start)
+    return match.start() if match else len(text)
+
+
+def _looks_like_section(section: str) -> bool:
+    if not section or len(section) < 1000:
+        return False
+    words = section.split()
+    if len(words) < 120:
+        return False
+    upper = section.upper()
+    keywords = ["MANAGEMENT", "DISCUSSION", "RISK", "FACTORS", "OPERATIONS"]
+    return any(keyword in upper for keyword in keywords)
+
+
+def _extract_by_keywords(text: str, keywords: Optional[List[str]]) -> Optional[str]:
+    if not keywords:
         return None
-    remainder = upper_text[start_idx + len(header):]
-    match = re.search(r"\n\s*ITEM\s+\d+[A-Z]?\.\s", remainder)
-    end_idx = start_idx + len(header) + match.start() if match else len(text)
-    section = text[start_idx:end_idx]
-    return section.strip()
+    upper = text.upper()
+    for keyword in keywords:
+        idx = upper.find(keyword)
+        if idx != -1:
+            end = _find_next_item_boundary(text, idx + len(keyword))
+            snippet = text[idx:end].strip()
+            if len(snippet) > 400:
+                return snippet
+    return None
 
 
-def _summarize_text(llm_client, prompt: str, text: Optional[str]) -> Any:
+def _summarize_text(llm_client, prompt: str, text: Optional[str], *, kind: str = "generic") -> Any:
     if not text:
         return "Section unavailable."
     truncated = text.strip()
+    if not truncated:
+        return "Section unavailable."
+    lower_text = truncated.lower()
+    if kind == "risk" and ("no material change" in lower_text or "other than the risk factors" in lower_text):
+        return [
+            {
+                "risk": "No material updates disclosed in the latest filing.",
+                "category": "General",
+                "rationale": "Management stated there were no material changes to previously reported risk factors.",
+            }
+        ]
     if len(truncated) > 12000:
         truncated = truncated[:12000]
     messages = [

@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -160,7 +161,9 @@ export async function runAgentLogic(
 }
 
 async function runPythonBridge(ticker: string): Promise<BridgeResponse> {
-  const python = spawn('python3', ['-m', 'src.cli_bridge', ticker], {
+  const pythonExecutable = resolvePythonExecutable();
+
+  const python = spawn(pythonExecutable, ['-m', 'src.cli_bridge', ticker], {
     cwd: repoRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PYTHONUNBUFFERED: '1' },
@@ -196,6 +199,30 @@ async function runPythonBridge(ticker: string): Promise<BridgeResponse> {
         : 'Failed to parse pipeline output.'
     );
   }
+}
+
+function resolvePythonExecutable(): string {
+  const overrides = process.env.QUANT13_PYTHON;
+  if (overrides && overrides.trim()) {
+    return overrides.trim();
+  }
+
+  const candidates = [
+    path.join(repoRoot, '.venv', 'bin', 'python'),
+    path.join(repoRoot, '.venv', 'bin', 'python3'),
+    path.join(repoRoot, '.venv', 'Scripts', 'python.exe'),
+    path.join(repoRoot, 'venv', 'bin', 'python'),
+    path.join(repoRoot, 'venv', 'bin', 'python3'),
+    path.join(repoRoot, 'venv', 'Scripts', 'python.exe'),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return process.platform === 'win32' ? 'python' : 'python3';
 }
 
 function emitVolatilityLog(addLog: AddLogFn, result: BridgeResponse): void {

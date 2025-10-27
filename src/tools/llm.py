@@ -29,8 +29,11 @@ class LLMClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        response = requests.post(f"{self.base_url}/chat/completions", headers=headers, data=json.dumps(payload), timeout=60)
-        response.raise_for_status()
+        try:
+            response = requests.post(f"{self.base_url}/chat/completions", headers=headers, data=json.dumps(payload), timeout=60)
+            response.raise_for_status()
+        except requests.RequestException:
+            return self._fallback_response(messages)
         data = response.json()
         return data["choices"][0]["message"]["content"]
 

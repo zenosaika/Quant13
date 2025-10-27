@@ -292,6 +292,33 @@
     </section>
 
     <section>
+        <h2>Historical Simulation</h2>
+        <p class="small">
+            Strategy Type: <strong>{{ context.backtest.strategy_type or 'N/A' }}</strong>
+        </p>
+        {% if context.backtest.metrics %}
+            <table class="table">
+                <thead>
+                    <tr><th>Metric</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in context.backtest.metrics %}
+                        <tr>
+                            <th>{{ item.label }}</th>
+                            <td>{{ item.value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if context.backtest.summary %}
+            <div class="narrative">{{ context.backtest.summary }}</div>
+        {% else %}
+            <p class="small">No historical simulation available.</p>
+        {% endif %}
+    </section>
+
+    <section>
         <h2>Debate &amp; Thesis</h2>
         {% if context.thesis.narrative_html %}
             <div class="narrative">{{ context.thesis.narrative_html | safe }}</div>

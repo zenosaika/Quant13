@@ -172,12 +172,15 @@ def test_pipeline_runs_end_to_end():
         return "Fallback response"
 
     class DummyResponse:
-        def __init__(self) -> None:
-            self.text = "ITEM 7. Management discussion\nItem 8. Financial Statements"
+        def __init__(self, text: str = "") -> None:
+            self.text = text or "ITEM 7. Management discussion\nITEM 1A. Risk Factors"
             self.headers = {"Content-Type": "text/plain"}
 
-        def raise_for_status(self) -> None:
+        def raise_for_status(self) -> None:  # pragma: no cover - simple mock
             return None
+
+    def mock_sec_get(url, *args, **kwargs):
+        return DummyResponse()
 
     with patch("src.tools.llm.LLMClient.chat", side_effect=side_effect), \
         patch("src.orchestrator.fetch_ohlcv", return_value=_sample_ohlcv(90)), \
@@ -189,10 +192,15 @@ def test_pipeline_runs_end_to_end():
             "financials": pd.DataFrame({}),
             "balance_sheet": pd.DataFrame({}),
             "cashflow": pd.DataFrame({}),
-            "filings": pd.DataFrame({"filingType": ["10-K"], "filingDate": ["2024-01-01"], "linkToTxt": ["https://example.com/filing"]}),
+            "filings": [{"form": "10-K", "textUrl": "https://example.com/filing"}],
         }), \
-        patch("src.agents.fundamental.requests.get", return_value=DummyResponse()):
+        patch("src.data.sec.requests.get", side_effect=mock_sec_get):
 
         results = run_pipeline("TEST")
     assert "trade_proposal" in results
     assert results["trade_proposal"].trade_legs
+    assert results["trade_proposal"].conviction_level == results["trade_thesis"].conviction_level
+    assert "backtest_report" in results
+    backtest = results["backtest_report"].model_dump()
+    assert backtest["ticker"] == "TEST"
+    assert backtest["win_rate"] > 0

@@ -6,3 +6,7 @@ yfinance
 requests
 beautifulsoup4
 pytest
+jinja2
+weasyprint
+markdown
+matplotlib

@@ -15,6 +15,12 @@ def main() -> None:
     trade = results["trade_proposal"].model_dump()
     print("Final Trade Proposal:\n" + json.dumps(trade, indent=2))
 
+    pdf_path = results.get("report_pdf")
+    if pdf_path:
+        print(f"\nPDF report generated at: {pdf_path}")
+    elif results.get("report_pdf_error"):
+        print(f"\nPDF report generation failed: {results['report_pdf_error']}")
+
 
 if __name__ == "__main__":
     main()
