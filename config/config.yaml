@@ -115,7 +115,25 @@ agents:
           strategy_type: "Directional Options"
           summary: "NVDA swing trades historically posted 68% wins with double-digit percentage gains per cycle."
   risk:
-    prompts:
-      safe: "You are the Safe Risk Manager. Identify reasons to reduce exposure and recommend conservative adjustments."
-      neutral: "You are the Neutral Risk Manager. Evaluate if the proposed trade aligns with typical risk parameters and suggest balanced adjustments."
-      risky: "You are the Risky Risk Manager. Highlight opportunities to increase leverage responsibly if conviction and data support it."
+    prompt: |
+      You are the Chief Risk Officer for an institutional options desk. You will receive JSON containing:
+        - trade_thesis: debate outcome with conviction and key evidence.
+        - trade_proposal: strategy name, legs, deterministic risk metrics, and notes.
+        - volatility_report: IV rank and structural context.
+
+      Your job is to stress test the trade. Confirm the structure matches the thesis and volatility regime, highlight structural gaps, sizing constraints, or hedging ideas, and flag any missing data or generation failures. Be precise and actionable.
+
+      Respond with JSON in the form:
+        {
+          "adjustments": [
+            {"profile": "Safe", "recommendation": "..."},
+            {"profile": "Neutral", "recommendation": "..."},
+            {"profile": "Risky", "recommendation": "..."}
+          ],
+          "final_recommendation": "Summarize go/no-go guidance in one sentence."
+        }
+
+      Always produce at least one adjustment. If the trade generation failed or risk metrics are missing, warn explicitly.
+    temperature: 0.15
+    high_iv_threshold: 50
+    low_iv_threshold: 30

@@ -37,7 +37,18 @@ class TraderAgent:
             {"role": "user", "content": json.dumps(payload)},
         ]
         raw = self.llm.chat(messages, temperature=0.2)
-        data = _safe_json_loads(raw, options_chain, spot_price)
+        data = _safe_json_loads(raw)
+        data["conviction_level"] = None
+        expected_legs = _expected_leg_count(data.get("strategy_name"))
+        actual_legs = len(data.get("trade_legs", []) or [])
+
+        if data.get("generation_status") != "failed" and expected_legs is not None and actual_legs != expected_legs:
+            note_reason = (
+                f"Expected {expected_legs} leg(s) for strategy '{data.get('strategy_name')}', "
+                f"but received {actual_legs or 0}."
+            )
+            data = _mark_generation_failed(data, raw, note_reason)
+
         return TradeProposal(**data)
 
     def _build_strategy_guidance(self, volatility_report: VolatilityReport) -> str:
@@ -118,21 +129,14 @@ def _serialize_option_side(df: Any, spot_price: float, limit: int = 12) -> List[
     return trimmed.to_dict(orient="records")
 
 
-def _safe_json_loads(raw: str, options_chain: List[Dict[str, Any]], spot_price: float) -> Dict[str, Any]:
+def _safe_json_loads(raw: str) -> Dict[str, Any]:
     parsed, structured = _load_trade_json(raw)
     if parsed:
         proposal = _coerce_trade_proposal(parsed, structured, raw)
         if proposal:
             return proposal
 
-    fallback_leg = _construct_fallback_leg(options_chain, spot_price)
-    return {
-        "strategy_name": "Long Call",
-        "action": "BUY_TO_OPEN",
-        "quantity": 1,
-        "trade_legs": [fallback_leg] if fallback_leg else [],
-        "notes": raw.strip(),
-    }
+    return _failure_payload(raw, "Unable to parse structured trade proposal from LLM response.")
 
 
 JSON_BLOCK_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.DOTALL)
@@ -216,6 +220,7 @@ def _coerce_trade_proposal(candidate: Dict[str, Any], structured: Optional[Dict[
         "quantity": int(quantity),
         "trade_legs": normalized_legs,
         "notes": notes_payload,
+        "generation_status": "generated",
     }
 
 
@@ -269,42 +274,70 @@ def _normalize_leg(leg: Dict[str, Any], fallback_expiration: Optional[str]) -> O
     }
 
 
-def _construct_fallback_leg(options_chain: List[Dict[str, Any]], spot_price: float) -> Dict[str, Any]:
-    best_candidate: Optional[Dict[str, Any]] = None
-    best_distance = float("inf")
-
-    for entry in options_chain:
-        calls = entry.get("calls")
-        if isinstance(calls, pd.DataFrame) and not calls.empty:
-            working = calls.copy()
-            working["_distance"] = (working["strike"] - spot_price).abs()
-            row = working.sort_values("_distance").iloc[0]
-            distance = float(row["_distance"])
-            if distance < best_distance:
-                best_distance = distance
-                best_candidate = {
-                    "contract_symbol": row.get("contractSymbol", ""),
-                    "type": "CALL",
-                    "action": "BUY",
-                    "strike_price": float(row.get("strike", spot_price)),
-                    "expiration_date": entry.get("expiration", ""),
-                    "quantity": 1,
-                    "key_greeks_at_selection": {
-                        "delta": _clean_float(row.get("delta")),
-                        "gamma": _clean_float(row.get("gamma")),
-                        "theta": _clean_float(row.get("theta")),
-                        "vega": _clean_float(row.get("vega")),
-                        "impliedVolatility": _clean_float(row.get("impliedVolatility")),
-                    },
-                }
-
-    return best_candidate or {}
-
-
-def _clean_float(value: Any) -> Optional[float]:
-    try:
-        if value is None:
-            return None
-        return float(value)
-    except (TypeError, ValueError):
+def _expected_leg_count(strategy_name: Optional[str]) -> Optional[int]:
+    if not strategy_name:
         return None
+    lowered = strategy_name.strip().lower()
+    if not lowered:
+        return None
+
+    specific_rules: List[Tuple[Tuple[str, ...], int]] = [
+        (("iron condor",), 4),
+        (("iron butterfly",), 4),
+        (("broken wing butterfly",), 3),
+        (("butterfly",), 4),
+        (("condor",), 4),
+        (("calendar",), 2),
+        (("diagonal",), 2),
+        (("double diagonal",), 4),
+        (("strangle",), 2),
+        (("straddle",), 2),
+        (("collar",), 2),
+        (("covered call",), 2),
+        (("covered put",), 2),
+        (("ladder",), 3),
+        (("ratio",), None),
+    ]
+
+    for keywords, legs in specific_rules:
+        for keyword in keywords:
+            if keyword in lowered:
+                return legs
+
+    if "spread" in lowered or "vertical" in lowered:
+        return 2
+    if lowered.startswith("bull") or lowered.startswith("bear"):
+        if "credit" in lowered or "debit" in lowered or "spread" in lowered:
+            return 2
+
+    if lowered.startswith("long ") or lowered.startswith("short "):
+        return 1
+
+    return None
+
+
+def _mark_generation_failed(data: Dict[str, Any], raw: str, reason: str) -> Dict[str, Any]:
+    base = dict(data)
+    base.setdefault("trade_legs", [])
+    base.setdefault("notes", "")
+    note_parts = [reason]
+    if base["notes"]:
+        note_parts.append(base["notes"])
+    else:
+        note_parts.append(raw.strip())
+
+    base["generation_status"] = "failed"
+    base["quantity"] = int(base.get("quantity") or 0)
+    base["notes"] = "\n\n".join(part for part in note_parts if part)
+    return base
+
+
+def _failure_payload(raw: str, reason: str) -> Dict[str, Any]:
+    return {
+        "strategy_name": "Unspecified",
+        "action": "UNDEFINED",
+        "quantity": 0,
+        "trade_legs": [],
+        "notes": f"{reason}\n\nRaw response:\n{raw.strip()}",
+        "generation_status": "failed",
+    }

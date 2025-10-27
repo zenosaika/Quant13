@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict
@@ -22,6 +23,7 @@ from src.data.fetcher import (
     fetch_options_chain,
 )
 from src.data.preprocessing import compute_returns
+from src.utils.risk import calculate_risk_metrics
 
 try:
     from generate_report import generate_pdf_report
@@ -51,16 +53,31 @@ def run_pipeline(ticker: str) -> Dict[str, object]:
     }
 
     volatility_agent = VolatilityModelingAgent(config["agents"]["volatility"])
-    volatility_report = volatility_agent.run(base_state)
-
     sentiment_agent = SentimentAgent(config["agents"]["sentiment"])
-    sentiment_report = sentiment_agent.run(base_state)
-
     technical_agent = TechnicalAnalyst(config["agents"]["technical"])
-    technical_report = technical_agent.run(base_state)
-
     fundamental_agent = FundamentalAnalyst(config["agents"]["fundamental"])
-    fundamental_report = fundamental_agent.run(base_state)
+
+    analyst_agents = {
+        "volatility": (volatility_agent, base_state),
+        "sentiment": (sentiment_agent, base_state),
+        "technical": (technical_agent, base_state),
+        "fundamental": (fundamental_agent, base_state),
+    }
+
+    analyst_results: Dict[str, object] = {}
+    with ThreadPoolExecutor(max_workers=len(analyst_agents)) as executor:
+        futures = {
+            executor.submit(agent.run, state): key
+            for key, (agent, state) in analyst_agents.items()
+        }
+        for future in as_completed(futures):
+            key = futures[future]
+            analyst_results[key] = future.result()
+
+    volatility_report = analyst_results["volatility"]
+    sentiment_report = analyst_results["sentiment"]
+    technical_report = analyst_results["technical"]
+    fundamental_report = analyst_results["fundamental"]
 
     reports_payload = {
         "volatility": volatility_report.model_dump(),
@@ -85,9 +102,15 @@ def run_pipeline(ticker: str) -> Dict[str, object]:
 
     trader = TraderAgent(config["agents"]["trader"])
     trade_proposal = trader.propose_trade(trade_thesis, volatility_report, options_chain, spot_price)
-    trade_proposal = trade_proposal.model_copy(update={"conviction_level": trade_thesis.conviction_level})
+    risk_metrics = calculate_risk_metrics(trade_proposal, options_chain)
+    trade_proposal = trade_proposal.model_copy(update={
+        "conviction_level": trade_thesis.conviction_level,
+        "max_risk": risk_metrics.get("max_risk"),
+        "max_reward": risk_metrics.get("max_reward"),
+        "net_premium": risk_metrics.get("net_premium"),
+    })
 
-    risk_team = RiskManagementTeam()
+    risk_team = RiskManagementTeam(config["agents"].get("risk", {}))
     risk_assessment = risk_team.assess(trade_proposal, trade_thesis, volatility_report)
 
     results = {

@@ -1,15 +1,73 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timedelta
+from pathlib import Path
+import hashlib
+import os
+import pickle
 import re
+import time
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-import yfinance as yf
 import requests
+import yfinance as yf
 from bs4 import BeautifulSoup
 
 from src.data.sec import fetch_recent_filings
+
+
+_CACHE_DIR = Path(__file__).resolve().parents[2] / "cache" / "data_fetch"
+_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+_CACHE_TTL_SECONDS = int(os.getenv("DATA_FETCH_CACHE_TTL_SECONDS", "900"))
+
+
+def _cache_enabled() -> bool:
+    return _CACHE_TTL_SECONDS > 0
+
+
+def _cache_path(namespace: str, key: str) -> Path:
+    hashed = hashlib.sha256(f"{namespace}:{key}".encode("utf-8")).hexdigest()
+    return _CACHE_DIR / f"{namespace}_{hashed}.pkl"
+
+
+def _load_from_cache(namespace: str, key: str) -> Any:
+    if not _cache_enabled():
+        return None
+    path = _cache_path(namespace, key)
+    if not path.exists():
+        return None
+    if time.time() - path.stat().st_mtime > _CACHE_TTL_SECONDS:
+        return None
+    try:
+        with path.open("rb") as handle:
+            return pickle.load(handle)
+    except (OSError, pickle.PickleError):
+        return None
+
+
+def _save_to_cache(namespace: str, key: str, value: Any) -> None:
+    if not _cache_enabled():
+        return
+    path = _cache_path(namespace, key)
+    try:
+        with path.open("wb") as handle:
+            pickle.dump(value, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    except (OSError, pickle.PickleError):
+        return
+
+
+def _clone_cached(value: Any) -> Any:
+    if isinstance(value, pd.DataFrame):
+        return value.copy(deep=True)
+    if isinstance(value, list):
+        return [ _clone_cached(item) for item in value ]
+    if isinstance(value, dict):
+        return {key: _clone_cached(item) for key, item in value.items()}
+    if isinstance(value, (str, int, float, bool, type(None))):
+        return value
+    return deepcopy(value)
 
 
 def _create_ticker(ticker: str) -> yf.Ticker:
@@ -18,16 +76,28 @@ def _create_ticker(ticker: str) -> yf.Ticker:
 
 def fetch_ohlcv(ticker: str, lookback_days: int) -> pd.DataFrame:
     """Fetch OHLCV data for the given ticker."""
+    cache_key = f"{ticker.upper()}_{lookback_days}"
+    cached = _load_from_cache("ohlcv", cache_key)
+    if cached is not None:
+        return _clone_cached(cached)
+
     end_date = datetime.utcnow()
     buffer_days = max(int(lookback_days * 3), 400)
     start_date = end_date - timedelta(days=buffer_days)
     df = _create_ticker(ticker).history(start=start_date, end=end_date, interval="1d")
     if df.empty:
         raise ValueError(f"No OHLCV data returned for {ticker}")
-    return df[["Open", "High", "Low", "Close", "Volume"]].rename(columns=str.lower)
+    subset = df[["Open", "High", "Low", "Close", "Volume"]].rename(columns=str.lower)
+    _save_to_cache("ohlcv", cache_key, subset)
+    return subset.copy(deep=True)
 
 
 def fetch_options_chain(ticker: str, limit_expirations: int = 2) -> List[Dict[str, Any]]:
+    cache_key = f"{ticker.upper()}_{limit_expirations}"
+    cached = _load_from_cache("options_chain", cache_key)
+    if cached is not None:
+        return _clone_cached(cached)
+
     ticker_obj = _create_ticker(ticker)
     expirations = ticker_obj.options
     chain: List[Dict[str, Any]] = []
@@ -40,10 +110,16 @@ def fetch_options_chain(ticker: str, limit_expirations: int = 2) -> List[Dict[st
             "calls": calls,
             "puts": puts,
         })
-    return chain
+    _save_to_cache("options_chain", cache_key, chain)
+    return _clone_cached(chain)
 
 
 def fetch_news(ticker: str, limit: int) -> List[Dict[str, Any]]:
+    cache_key = f"{ticker.upper()}_{limit}"
+    cached = _load_from_cache("news", cache_key)
+    if cached is not None:
+        return _clone_cached(cached)
+
     ticker_obj = _create_ticker(ticker)
     raw_news = ticker_obj.news or []
     articles: List[Dict[str, Any]] = []
@@ -59,19 +135,31 @@ def fetch_news(ticker: str, limit: int) -> List[Dict[str, Any]]:
                 article["link"] = link
         _ensure_summary(article)
         articles.append(article)
-    return articles
+    _save_to_cache("news", cache_key, articles)
+    return _clone_cached(articles)
 
 
 def fetch_company_overview(ticker: str) -> Dict[str, Any]:
+    cache_key = ticker.upper()
+    cached = _load_from_cache("company_overview", cache_key)
+    if cached is not None:
+        return _clone_cached(cached)
+
     ticker_obj = _create_ticker(ticker)
     try:
         info = ticker_obj.get_info()
     except Exception:  # pragma: no cover - network variability
         info = {}
-    return info
+    _save_to_cache("company_overview", cache_key, info)
+    return _clone_cached(info)
 
 
 def fetch_fundamental_bundle(ticker: str) -> Dict[str, Any]:
+    cache_key = ticker.upper()
+    cached = _load_from_cache("fundamental_bundle", cache_key)
+    if cached is not None:
+        return _clone_cached(cached)
+
     ticker_obj = _create_ticker(ticker)
     info: Dict[str, Any] = {}
     financials = pd.DataFrame()
@@ -103,13 +191,15 @@ def fetch_fundamental_bundle(ticker: str) -> Dict[str, Any]:
     if isinstance(filings, pd.DataFrame) and filings.empty:
         filings = fetch_recent_filings(ticker)
 
-    return {
+    bundle = {
         "info": info,
         "financials": financials,
         "balance_sheet": balance_sheet,
         "cashflow": cashflow,
         "filings": filings,
     }
+    _save_to_cache("fundamental_bundle", cache_key, bundle)
+    return _clone_cached(bundle)
 
 
 def _fetch_filings(ticker_obj: yf.Ticker) -> pd.DataFrame:
