@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ context.ticker }} Options Strategy Report – Quant13</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.2cm;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #ffffff;
+        }
+
+        .report {
+            width: 100%;
+        }
+
+        /* Modern Header */
+        header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            font-size: 28pt;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 10pt;
+            opacity: 0.9;
+        }
+
+        /* Hero Card - Capital Required */
+        .hero-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .hero-card h2 {
+            margin: 0 0 16px 0;
+            font-size: 18pt;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .capital-amount {
+            font-size: 36pt;
+            font-weight: 800;
+            color: #1e40af;
+            margin: 12px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .capital-label {
+            font-size: 12pt;
+            color: #475569;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .risk-reward-grid {
+            display: table;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .risk-reward-item {
+            display: table-cell;
+            text-align: center;
+            padding: 12px;
+            border-right: 1px solid #cbd5e1;
+        }
+
+        .risk-reward-item:last-child {
+            border-right: none;
+        }
+
+        .risk-reward-label {
+            font-size: 9pt;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .risk-reward-value {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .risk-reward-value.positive {
+            color: #059669;
+        }
+
+        .risk-reward-value.negative {
+            color: #dc2626;
+        }
+
+        /* Strategy Explanation Card */
+        .strategy-card {
+            background: #fff7ed;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .strategy-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 14pt;
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .strategy-card p {
+            margin: 0 0 8px 0;
+            font-size: 10pt;
+            line-height: 1.7;
+            color: #78350f;
+        }
+
+        .strategy-card .learn-more {
+            background: #fef3c7;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 9.5pt;
+            color: #78350f;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .info-card h2 {
+            margin: 0 0 14px 0;
+            font-size: 14pt;
+            color: #1e40af;
+            font-weight: 700;
+            border-bottom: 2px solid #dbeafe;
+            padding-bottom: 8px;
+        }
+
+        .info-card h3 {
+            margin: 14px 0 8px 0;
+            font-size: 11pt;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        /* Executive Summary Grid */
+        .summary-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-col {
+            display: table-cell;
+            vertical-align: top;
+            padding: 12px;
+        }
+
+        .summary-col:first-child {
+            width: 60%;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        /* Highlights Grid */
+        .highlights-grid {
+            display: table;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .highlight-item {
+            display: table-row;
+        }
+
+        .highlight-label {
+            display: table-cell;
+            padding: 8px 12px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 9.5pt;
+            border: 1px solid #e2e8f0;
+            width: 40%;
+        }
+
+        .highlight-value {
+            display: table-cell;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 10pt;
+            color: #0f172a;
+        }
+
+        /* Trade Legs Table */
+        .legs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 9.5pt;
+        }
+
+        .legs-table thead {
+            background: #1e40af;
+            color: white;
+        }
+
+        .legs-table th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .legs-table td {
+            padding: 10px 8px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .legs-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .legs-table .action-buy {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .legs-table .action-sell {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        /* Narrative Boxes */
+        .narrative {
+            background: #f8fafc;
+            border-left: 3px solid #3b82f6;
+            padding: 14px 16px;
+            margin-top: 12px;
+            font-size: 10pt;
+            line-height: 1.7;
+            border-radius: 4px;
+        }
+
+        .narrative p {
+            margin: 0 0 10px 0;
+        }
+
+        .narrative p:last-child {
+            margin-bottom: 0;
+        }
+
+        .narrative strong {
+            color: #1e40af;
+        }
+
+        /* Meta Information */
+        .meta-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 18px;
+            font-size: 9.5pt;
+        }
+
+        .meta-row {
+            display: table-row;
+        }
+
+        .meta-label {
+            display: table-cell;
+            padding: 6px 10px;
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            width: 25%;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+            letter-spacing: 0.05em;
+        }
+
+        .meta-value {
+            display: table-cell;
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* Lists */
+        ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        /* Small text */
+        .small {
+            font-size: 9pt;
+            color: #64748b;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-bullish {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-bearish {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-neutral {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 2px solid #e2e8f0;
+            padding-top: 14px;
+            margin-top: 24px;
+            font-size: 8.5pt;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Visuals */
+        figure {
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        figure img {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        figure figcaption {
+            margin-top: 8px;
+            font-size: 9pt;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Page breaks */
+        section {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+<div class="report">
+    <!-- Modern Header -->
+    <header>
+        <h1>{{ context.ticker }}</h1>
+        <p>Options Strategy Report · Generated {{ context.report_date }}</p>
+    </header>
+
+    <!-- Hero Card: Capital Required -->
+    <div class="hero-card">
+        <h2>💰 Investment Required</h2>
+        {% if context.trade.capital_required %}
+            <div class="capital-amount">{{ context.trade.capital_required }}</div>
+            <div class="capital-label">{{ context.trade.capital_label or "Total Capital Required" }}</div>
+        {% else %}
+            <div class="capital-amount">{{ context.trade.net_premium or "N/A" }}</div>
+            <div class="capital-label">Net Premium</div>
+        {% endif %}
+
+        <div class="risk-reward-grid">
+            <div class="risk-reward-item">
+                <div class="risk-reward-label">Max Risk</div>
+                <div class="risk-reward-value negative">{{ context.trade.max_risk_display }}</div>
+            </div>
+            <div class="risk-reward-item">
+                <div class="risk-reward-label">Max Reward</div>
+                <div class="risk-reward-value positive">{{ context.trade.max_reward_display }}</div>
+            </div>
+            <div class="risk-reward-item">
+                <div class="risk-reward-label">Strategy</div>
+                <div class="risk-reward-value">{{ context.trade.strategy or 'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Explanation for Beginners -->
+    {% if context.trade.strategy_explanation %}
+    <div class="strategy-card">
+        <h3>📚 What is {{ context.trade.strategy }}?</h3>
+        <p>{{ context.trade.strategy_explanation }}</p>
+        {% if context.trade.strategy_pros_cons %}
+        <div class="learn-more">
+            <strong>Key Points:</strong> {{ context.trade.strategy_pros_cons }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Quick Facts -->
+    {% if context.meta %}
+    <div class="info-card">
+        <h2>📊 Quick Facts</h2>
+        <div class="meta-grid">
+            {% for item in context.meta %}
+            <div class="meta-row">
+                <div class="meta-label">{{ item.label }}</div>
+                <div class="meta-value">{{ item.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Executive Summary -->
+    <div class="info-card">
+        <h2>📋 Executive Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-col">
+                <h3>{{ context.executive_summary.headline }}</h3>
+                {% if context.executive_summary.bullets %}
+                    <ul>
+                        {% for bullet in context.executive_summary.bullets %}
+                            <li>{{ bullet }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="small">Analysis summary not available.</p>
+                {% endif %}
+            </div>
+            <div class="summary-col">
+                <h3>Market Snapshot</h3>
+                <div class="highlights-grid">
+                    {% for row in context.market_snapshot_rows %}
+                    <div class="highlight-item">
+                        <div class="highlight-label">{{ row.label }}</div>
+                        <div class="highlight-value">{{ row.value }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Details -->
+    <div class="info-card">
+        <h2>🎯 Your Recommended Trade</h2>
+
+        <p class="small">
+            <strong>Strategy:</strong> {{ context.trade.strategy or 'N/A' }}
+            · <strong>Action:</strong> {{ context.trade.action or 'N/A' }}
+            · <strong>Quantity:</strong> {{ context.trade.quantity or 'N/A' }}
+            · <strong>Conviction:</strong>
+            {% if context.trade.direction == 'Bullish' %}
+                <span class="badge badge-bullish">{{ context.trade.conviction or 'N/A' }}</span>
+            {% elif context.trade.direction == 'Bearish' %}
+                <span class="badge badge-bearish">{{ context.trade.conviction or 'N/A' }}</span>
+            {% else %}
+                <span class="badge badge-neutral">{{ context.trade.conviction or 'N/A' }}</span>
+            {% endif %}
+        </p>
+
+        {% if context.trade.highlights %}
+        <h3>Key Metrics</h3>
+        <div class="highlights-grid">
+            {% for item in context.trade.highlights %}
+            <div class="highlight-item">
+                <div class="highlight-label">{{ item.label }}</div>
+                <div class="highlight-value">{{ item.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if context.trade.legs %}
+        <h3>Trade Components</h3>
+        <table class="legs-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Type</th>
+                    <th>Strike</th>
+                    <th>Expiration</th>
+                    <th>Contract</th>
+                    <th>Quantity</th>
+                    <th>Key Greeks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leg in context.trade.legs %}
+                <tr>
+                    <td class="{% if 'BUY' in leg.action %}action-buy{% else %}action-sell{% endif %}">
+                        {{ leg.action }}
+                    </td>
+                    <td>{{ leg.type }}</td>
+                    <td><strong>{{ leg.strike }}</strong></td>
+                    <td><span class="nowrap">{{ leg.expiration }}</span></td>
+                    <td><span class="nowrap">{{ leg.symbol }}</span></td>
+                    <td>{{ leg.quantity }}</td>
+                    <td class="small">{{ leg.greeks | safe }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        {% if context.trade.justification_html %}
+        <h3>Why This Trade?</h3>
+        <div class="narrative">{{ context.trade.justification_html | safe }}</div>
+        {% endif %}
+    </div>
+
+    <!-- Market Thesis -->
+    <div class="info-card">
+        <h2>💭 Our Market View</h2>
+        {% if context.thesis.narrative_html %}
+            <div class="narrative">{{ context.thesis.narrative_html | safe }}</div>
+        {% else %}
+            <p class="small">Market thesis not available.</p>
+        {% endif %}
+
+        {% if context.thesis.plan_rows %}
+        <h3>Analysis Highlights</h3>
+        <div class="highlights-grid">
+            {% for row in context.thesis.plan_rows %}
+            <div class="highlight-item">
+                <div class="highlight-label">{{ row.label }}</div>
+                <div class="highlight-value">{{ row.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if context.thesis.evidence %}
+        <h3>Supporting Evidence</h3>
+        {% for item in context.thesis.evidence %}
+            <p><strong>{{ item.type }}</strong></p>
+            <div class="narrative">{{ item.detail_html | safe }}</div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Technical Analysis -->
+    <div class="info-card">
+        <h2>📈 Technical Analysis</h2>
+        <p class="small">
+            <strong>Primary Bias:</strong>
+            {% if context.technical.bias == 'Bullish' %}
+                <span class="badge badge-bullish">{{ context.technical.bias }}</span>
+            {% elif context.technical.bias == 'Bearish' %}
+                <span class="badge badge-bearish">{{ context.technical.bias }}</span>
+            {% else %}
+                <span class="badge badge-neutral">{{ context.technical.bias or 'Neutral' }}</span>
+            {% endif %}
+        </p>
+
+        {% if context.technical.summary_html %}
+            <div class="narrative">{{ context.technical.summary_html | safe }}</div>
+        {% endif %}
+
+        {% if context.technical.indicators %}
+        <h3>Technical Indicators</h3>
+        <table class="legs-table">
+            <thead>
+                <tr><th>Indicator</th><th>Value</th><th>Interpretation</th></tr>
+            </thead>
+            <tbody>
+                {% for item in context.technical.indicators %}
+                <tr>
+                    <td><strong>{{ item.label }}</strong></td>
+                    <td>{{ item.value }}</td>
+                    <td class="small">{{ item.context }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        {% if context.technical.key_levels or context.technical.patterns %}
+        <h3>Key Levels &amp; Patterns</h3>
+        <div class="highlights-grid">
+            {% for level in context.technical.key_levels %}
+            <div class="highlight-item">
+                <div class="highlight-label">{{ level.label }}</div>
+                <div class="highlight-value">{{ level.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if context.technical.patterns %}
+        <ul>
+            {% for pattern in context.technical.patterns %}
+            <li><strong>{{ pattern.pattern }}</strong> on {{ pattern.date }} · {{ pattern.signal }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Fundamentals -->
+    <div class="info-card">
+        <h2>🏢 Fundamental Analysis</h2>
+        {% if context.fundamentals.business_summary_html %}
+            <div class="narrative">{{ context.fundamentals.business_summary_html | safe }}</div>
+        {% endif %}
+
+        {% if context.fundamentals.ratios %}
+        <h3>Key Financial Ratios</h3>
+        <div class="highlights-grid">
+            {% for ratio in context.fundamentals.ratios %}
+            <div class="highlight-item">
+                <div class="highlight-label">{{ ratio.label }}</div>
+                <div class="highlight-value">{{ ratio.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for trend in context.fundamentals.trend_tables %}
+        <h3>{{ trend.metric }}</h3>
+        {% if trend.direction %}<p class="small"><strong>Trend:</strong> {{ trend.direction }}</p>{% endif %}
+        <table class="legs-table">
+            <thead>
+                <tr><th>Period</th><th>Value</th></tr>
+            </thead>
+            <tbody>
+                {% for row in trend.rows %}
+                <tr>
+                    <td>{{ row.period }}</td>
+                    <td>{{ row.value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+
+        {% set mdna = context.fundamentals.mdna %}
+        {% if mdna.performance_drivers or mdna.opportunities or mdna.concerns %}
+        <h3>Management Discussion Insights</h3>
+        {% if mdna.performance_drivers %}
+            <p class="small"><strong>Performance Drivers:</strong></p>
+            <ul>
+                {% for item in mdna.performance_drivers %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if mdna.opportunities %}
+            <p class="small"><strong>Opportunities:</strong></p>
+            <ul>
+                {% for item in mdna.opportunities %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if mdna.concerns %}
+            <p class="small"><strong>Concerns:</strong></p>
+            <ul>
+                {% for item in mdna.concerns %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% endif %}
+
+        {% if context.fundamentals.risk_matrix %}
+        <h3>Risk Factors</h3>
+        <table class="legs-table">
+            <thead><tr><th>Risk</th><th>Category</th><th>Details</th></tr></thead>
+            <tbody>
+                {% for risk in context.fundamentals.risk_matrix %}
+                <tr>
+                    <td><strong>{{ risk.risk }}</strong></td>
+                    <td>{{ risk.category }}</td>
+                    <td class="small">{{ risk.rationale }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <!-- Sentiment -->
+    <div class="info-card">
+        <h2>📰 Market Sentiment</h2>
+        <p class="small">
+            <strong>Overall Score:</strong> {{ context.sentiment.score }} · {{ context.sentiment.summary }}
+        </p>
+
+        {% if context.sentiment.articles %}
+        <h3>Recent Headlines</h3>
+        <table class="legs-table">
+            <thead><tr><th style="width:35%">Title</th><th>Publisher</th><th>Date</th><th>Summary</th></tr></thead>
+            <tbody>
+                {% for article in context.sentiment.articles %}
+                <tr>
+                    <td><strong>{{ article.title }}</strong></td>
+                    <td>{{ article.publisher }}</td>
+                    <td><span class="nowrap">{{ article.published }}</span></td>
+                    <td class="small">{{ article.summary }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="small">No recent news articles captured.</p>
+        {% endif %}
+    </div>
+
+    <!-- Volatility & Risk -->
+    <div class="info-card">
+        <h2>📊 Volatility &amp; Risk Assessment</h2>
+
+        {% if context.volatility.metrics %}
+        <div class="highlights-grid">
+            {% for metric in context.volatility.metrics %}
+            <div class="highlight-item">
+                <div class="highlight-label">{{ metric.label }}</div>
+                <div class="highlight-value">{{ metric.value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if context.volatility.forecast %}
+        <h3>Volatility Outlook</h3>
+        <div class="narrative">{{ context.volatility.forecast }}</div>
+        {% endif %}
+
+        {% if context.risk.final %}
+        <h3>Final Recommendation</h3>
+        <div class="narrative"><strong>{{ context.risk.final }}</strong></div>
+        {% endif %}
+
+        {% if context.risk.adjustments %}
+        <h3>Risk Profile Adjustments</h3>
+        <table class="legs-table">
+            <thead><tr><th>Investor Profile</th><th>Recommended Adjustment</th></tr></thead>
+            <tbody>
+                {% for item in context.risk.adjustments %}
+                <tr>
+                    <td><strong>{{ item.profile }}</strong></td>
+                    <td class="small">{{ item.recommendation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <!-- Charts -->
+    {% if context.visuals.trend_charts %}
+    <div class="info-card">
+        <h2>📉 Visual Analysis</h2>
+        {% for chart in context.visuals.trend_charts %}
+        <figure>
+            <img src="{{ chart.image }}" alt="{{ chart.label }}" />
+            <figcaption>{{ chart.label }}</figcaption>
+        </figure>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <strong>DISCLAIMER:</strong> {{ context.disclaimer }}
+        <br><br>
+        <strong>Report Generated:</strong> {{ context.report_date }} · <strong>Folder:</strong> {{ context.results_folder }}
+    </footer>
+</div>
+</body>
+</html>
