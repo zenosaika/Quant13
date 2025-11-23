@@ -139,7 +139,7 @@ npm start
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  3. Debate & Thesis Formation                               │
-│     Bull Researcher ⚔️ Bear Researcher → Moderator          │
+│     Bull Researcher ⚔️ Bear Researcher → Moderator          |
 │     Output: Direction + Conviction Level                    │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
@@ -485,20 +485,6 @@ Quant13 was developed as part of academic research into hybrid AI systems for fi
 **Phase 3: Portfolio Management**
 - Multi-ticker portfolio optimization
 - Greek-neutral hedging strategies
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Areas of interest:
-
-- [ ] Additional options strategies
-- [ ] Alternative data sources (Polygon.io, Alpaca, etc.)
-- [ ] Enhanced backtesting engine
-- [ ] Real broker integrations (paper trading)
-- [ ] Mobile app interface
-
-Please open an issue or submit a PR.
 
 ---
 
