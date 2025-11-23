@@ -122,51 +122,51 @@ npm start
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  1. Data Collection                                         │
-│     • OHLCV data (yfinance)                                │
-│     • Options chain + Greeks enrichment (Black-Scholes)    │
-│     • News & fundamentals                                  │
+│     • OHLCV data (yfinance)                                 │
+│     • Options chain + Greeks enrichment (Black-Scholes)     │
+│     • News & fundamentals                                   │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  2. Parallel Analyst Phase (Concurrent Execution)          │
-│     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│     │ Volatility  │  │  Sentiment  │  │  Technical  │    │
-│     └─────────────┘  └─────────────┘  └─────────────┘    │
-│     ┌─────────────┐                                        │
-│     │Fundamental  │                                        │
-│     └─────────────┘                                        │
+│  2. Parallel Analyst Phase (Concurrent Execution)           │
+│     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
+│     │ Volatility  │  │  Sentiment  │  │  Technical  │       │
+│     └─────────────┘  └─────────────┘  └─────────────┘       │
+│     ┌─────────────┐                                         │
+│     │Fundamental  │                                         │
+│     └─────────────┘                                         │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  3. Debate & Thesis Formation                              │
-│     Bull Researcher ⚔️ Bear Researcher → Moderator         │
-│     Output: Direction + Conviction Level                   │
+│  3. Debate & Thesis Formation                               │
+│     Bull Researcher ⚔️ Bear Researcher → Moderator          │
+│     Output: Direction + Conviction Level                    │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  4. Systematic Trade Construction                          │
-│     • Strategy scoring algorithm (Direction + IV + Conv.)  │
-│     • Delta-based strike selection                         │
-│     • Multi-leg strategy assembly                          │
+│  4. Systematic Trade Construction                           │
+│     • Strategy scoring algorithm (Direction + IV + Conv.)   │
+│     • Delta-based strike selection                          │
+│     • Multi-leg strategy assembly                           │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  5. Validation & Risk Calculation                          │
-│     • Thesis-strategy alignment check                      │
-│     • Black-Scholes pricing for spreads                    │
-│     • Max risk/reward computation                          │
+│  5. Validation & Risk Calculation                           │
+│     • Thesis-strategy alignment check                       │
+│     • Black-Scholes pricing for spreads                     │
+│     • Max risk/reward computation                           │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  6. Final Review & Decision                                │
-│     Risk Manager → Fund Manager → Execute/Reject           │
+│  6. Final Review & Decision                                 │
+│     Risk Manager → Fund Manager → Execute/Reject            │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  7. Reporting & Notifications                              │
-│     • JSON reports saved to results/                       │
-│     • PDF generation (English/Thai)                        │
-│     • Discord webhook notification                         │
+│  7. Reporting & Notifications                               │
+│     • JSON reports saved to results/                        │
+│     • PDF generation (English/Thai)                         │
+│     • Discord webhook notification                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
