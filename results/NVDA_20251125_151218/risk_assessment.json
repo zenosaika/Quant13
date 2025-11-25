@@ -1,0 +1,17 @@
+{
+  "adjustments": [
+    {
+      "profile": "Safe",
+      "recommendation": "Operate within baseline risk budget; IV Rank is mid-range."
+    },
+    {
+      "profile": "Neutral",
+      "recommendation": "Ensure Long Put positioning reflects medium conviction with appropriate Greeks."
+    },
+    {
+      "profile": "Risky",
+      "recommendation": "Maintain base exposure; avoid leverage expansion without stronger conviction."
+    }
+  ],
+  "final_recommendation": "Proceed with trade, monitoring IV Rank at 33.2 and respecting the medium conviction profile."
+}

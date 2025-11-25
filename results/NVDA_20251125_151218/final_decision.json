@@ -1,0 +1,6 @@
+{
+  "execute_trade": true,
+  "final_sizing": "half",
+  "manager_rationale": "The trade generation succeeded, and the strategy (Long Put) perfectly aligns with the Bearish thesis. Conviction is medium, which typically warrants a 'half' position size. The Risk Management Team confirms that the IV Rank (33.2) is mid-range and recommends proceeding while respecting the medium conviction profile. The risk/reward profile is highly favorable (Max Risk $670 vs. Max Reward $16,830), which supports execution. Given the medium conviction and the absence of significant risk flags, a 50% position size is appropriate to capitalize on the directional view while managing exposure.",
+  "final_recommendation": "Execute the Long Put trade at 50% (half) sizing, aligning with the medium bearish conviction and favorable risk assessment."
+}

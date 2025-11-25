@@ -1,0 +1,8 @@
+{
+  "agent": "VolatilityModelingAgent",
+  "ticker": "NVDA",
+  "iv_rank": 33.21545186716658,
+  "volatility_forecast": "Volatility remains subdued versus long-run norms.",
+  "skew_analysis": "Calls imply higher volatility than puts, suggesting upside exposure demand.",
+  "term_structure": "Backwardation: Short-term options imply higher volatility than longer-dated contracts."
+}

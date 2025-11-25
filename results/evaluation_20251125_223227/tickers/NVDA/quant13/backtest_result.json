@@ -1,0 +1,17 @@
+{
+  "ticker": "NVDA",
+  "strategy_name": "quant13",
+  "start_date": "2024-11-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10261.211063566649,
+  "total_return": 261.2110635666486,
+  "total_return_pct": 2.612110635666486,
+  "num_trades": 3,
+  "num_winners": 3,
+  "num_losers": 0,
+  "win_rate": 1.0,
+  "average_pnl": 87.07035452221595,
+  "max_drawdown": -0.0005780949337036952,
+  "sharpe_ratio": 5.043312532863305
+}

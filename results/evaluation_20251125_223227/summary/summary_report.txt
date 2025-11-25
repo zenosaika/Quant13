@@ -1,0 +1,36 @@
+================================================================================
+MULTI-TICKER EVALUATION SUMMARY REPORT
+================================================================================
+
+Generated: 2025-11-25 22:33:40
+
+Total Results: 3
+Tickers: 1 (NVDA)
+Strategies: 3 (chimpanzee, quant13, technical)
+
+--------------------------------------------------------------------------------
+STRATEGY COMPARISON
+--------------------------------------------------------------------------------
+
+               total_return_pct  sharpe_ratio  win_rate  max_drawdown  num_trades  num_winners  num_losers  avg_trades_per_ticker
+strategy_name                                                                                                                    
+quant13                    2.61          5.04      1.00          -0.0           3            3           0                    3.0
+technical                  1.15          3.55      1.00           0.0           1            1           0                    1.0
+chimpanzee               -18.67         -3.79      0.67          -0.2           3            2           1                    3.0
+
+--------------------------------------------------------------------------------
+BEST STRATEGIES
+--------------------------------------------------------------------------------
+
+Best Sharpe Ratio: quant13
+Best Total Return: quant13
+
+--------------------------------------------------------------------------------
+PERFORMANCE MATRIX (Total Return %)
+--------------------------------------------------------------------------------
+
+strategy_name  chimpanzee  quant13  technical
+ticker                                       
+NVDA               -18.67     2.61       1.15
+MEAN               -18.67     2.61       1.15
+

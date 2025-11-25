@@ -34,9 +34,10 @@ class SystematicTraderAgent:
     - Trade rationale documentation
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], backtest_mode: bool = False):
         self.config = config
-        self.selector = SystematicStrategySelector()
+        self.backtest_mode = backtest_mode
+        self.selector = SystematicStrategySelector(backtest_mode=backtest_mode)
         self.strike_selector = StrikeSelector()
         self.llm = get_llm_client()
 

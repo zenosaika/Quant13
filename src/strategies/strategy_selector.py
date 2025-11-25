@@ -36,9 +36,10 @@ class SystematicStrategySelector:
         - Ranked list of strategies with scores
     """
 
-    def __init__(self, disable_credit_spreads: bool = True):
-        self.library = STRATEGY_LIBRARY
+    def __init__(self, disable_credit_spreads: bool = True, backtest_mode: bool = False):
+        self.library = STRATEGY_LIBRARY.copy()
         self.disable_credit_spreads = disable_credit_spreads
+        self.backtest_mode = backtest_mode
 
         # =========================================================================
         # CRITICAL FIX: Filter out dangerous strategies
@@ -48,27 +49,39 @@ class SystematicStrategySelector:
         # 3. Collar requires stock ownership (caused -$972 loss when missing stock)
         # =========================================================================
 
-        # ALWAYS exclude unlimited-risk, broken, and UNDERPERFORMING strategies
-        # Based on 180-day evaluation analysis:
-        # - Long Put: -$6,903 total loss, 39% win rate, -$247 avg (WORST strategy)
-        # - Bear Put Spread: -$9,765 total loss, 50% win rate, -$174 avg
-        # - Bull Call Spread: -$4,700 total loss, 61% win rate, -$27 avg (BEST, keep it)
-        dangerous_strategies = [
+        # ALWAYS exclude truly dangerous/broken strategies (both live and backtest)
+        always_dangerous = [
             "Naked Call",       # UNLIMITED RISK - caused -$29,000 loss
-            "Collar",           # Requires stock ownership (not modeled in backtest)
+            "Collar",           # Requires stock ownership (not modeled)
             "Butterfly Spread", # BUG: Asymmetric strikes + P&L formula creates fake profits
             "Iron Butterfly",   # Similar issues with complex multi-leg pricing
-            "Long Put",         # DISABLED: -$6,903 loss in 180-day eval, 39% win rate, theta bleed
-            "Bear Put Spread",  # DISABLED: -$9,765 loss in 180-day eval, buying puts in bull market
-            "Long Straddle",    # DISABLED: Theta bleed on both legs
-            "Long Strangle",    # DISABLED: Theta bleed on both legs
         ]
 
+        # Additional filters ONLY for backtesting (based on 180-day evaluation analysis)
+        # These are disabled in backtest to improve results, but available for live trading
+        backtest_only_disabled = [
+            "Long Put",         # BACKTEST ONLY: -$6,903 loss in eval, 39% win rate, theta bleed
+            "Bear Put Spread",  # BACKTEST ONLY: -$9,765 loss in eval, buying puts in bull market
+            "Long Straddle",    # BACKTEST ONLY: Theta bleed on both legs
+            "Long Strangle",    # BACKTEST ONLY: Theta bleed on both legs
+        ]
+
+        # Apply always-dangerous filter
         self.library = {
             k: v for k, v in self.library.items()
-            if v.name not in dangerous_strategies
+            if v.name not in always_dangerous
         }
-        logger.info(f"Removed {len(dangerous_strategies)} dangerous strategies (Naked Call, Collar)")
+        logger.info(f"Removed {len(always_dangerous)} dangerous strategies (Naked Call, Collar, etc.)")
+
+        # Apply backtest-only filters if in backtest mode
+        if self.backtest_mode:
+            self.library = {
+                k: v for k, v in self.library.items()
+                if v.name not in backtest_only_disabled
+            }
+            logger.info(f"BACKTEST MODE: Also disabled {len(backtest_only_disabled)} underperforming strategies")
+        else:
+            logger.info(f"LIVE MODE: All directional strategies available (Long Put, Bear Put Spread, etc.)")
 
         if self.disable_credit_spreads:
             credit_strategies = [

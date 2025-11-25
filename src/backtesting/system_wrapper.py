@@ -533,7 +533,7 @@ def run_system_backtest(
     technical_bias = final_technical_bias
 
     # Use systematic trader for deterministic results
-    trader = SystematicTraderAgent(config["agents"]["trader"])
+    trader = SystematicTraderAgent(config["agents"]["trader"], backtest_mode=True)
     trade_proposal = trader.propose_trade(
         trade_thesis,
         volatility_report,

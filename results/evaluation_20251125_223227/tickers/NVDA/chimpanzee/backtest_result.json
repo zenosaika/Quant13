@@ -1,0 +1,17 @@
+{
+  "ticker": "NVDA",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-11-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 8133.2214762607755,
+  "total_return": -1866.7785237392245,
+  "total_return_pct": -18.667785237392245,
+  "num_trades": 3,
+  "num_winners": 2,
+  "num_losers": 1,
+  "win_rate": 0.6666666666666666,
+  "average_pnl": -622.2595079130748,
+  "max_drawdown": -0.19620793717055804,
+  "sharpe_ratio": -3.7878735161294887
+}

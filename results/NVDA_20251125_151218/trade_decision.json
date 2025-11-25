@@ -1,0 +1,29 @@
+{
+  "agent": "SystematicTraderAgent",
+  "strategy_name": "Long Put",
+  "action": "BUY_TO_OPEN",
+  "quantity": 1,
+  "trade_legs": [
+    {
+      "contract_symbol": "NVDA251205P00175000",
+      "type": "PUT",
+      "action": "BUY",
+      "strike_price": 175.0,
+      "expiration_date": "2025-12-05",
+      "quantity": 1,
+      "key_greeks_at_selection": {
+        "delta": -0.6651160789766372,
+        "gamma": 0.03925472952173126,
+        "theta": -0.175522146212732,
+        "vega": 0.09756874333386335,
+        "impliedVolatility": 0.3464420825195312
+      }
+    }
+  ],
+  "notes": "## Trade Rationale: Long Put on [Underlying Ticker]\n\nThis recommendation is based on our medium-conviction **Bearish thesis** for the underlying asset, currently trading at \\$170.58. The **Long Put** strategy is the most direct and aggressive way to capitalize on a predicted decline in price. By purchasing a put option, we gain the right, but not the obligation, to sell the underlying asset at the strike price, allowing us to profit dollar-for-dollar as the price falls below the breakeven point. This strategy perfectly aligns with our directional view, offering maximum leverage on a downward move.\n\nThe proposed trade involves **Buying the 175.0 Strike Put**. This option is currently in-the-money (ITM), evidenced by its high Delta of approximately -0.67, meaning the option price will move significantly with every dollar the underlying drops. The structure is simple: we pay a premium upfront, which represents our maximum possible loss (defined risk). Our profit potential is theoretically unlimited as the stock price approaches zero. Given the subdued IV Rank of 33.2, the cost of this directional exposure is relatively reasonable, though we must be mindful that the strategy requires the stock to drop enough to cover the premium paid before expiration.\n\nThe primary risk associated with this Long Put is **time decay (Theta)** and the possibility of the stock remaining flat or rising. Since we are paying a premium, the stock must move decisively lower and quickly enough to offset the daily erosion of the option's value. Furthermore, while the current volatility forecast suggests subdued conditions, a sudden spike in implied volatility (IV) could increase the option's value even if the stock price doesn't move much, but our primary profit driver remains the underlying price decline. We will monitor the stock's movement relative to the 175.0 strike price; failure to drop below the breakeven point by expiration will result in a loss of the premium paid.\n\n```json\n{\n  \"strategy\": \"Long Put\",\n  \"legs\": [\n    {\n      \"action\": \"BUY\",\n      \"type\": \"PUT\",\n      \"strike\": 175.0,\n      \"delta\": -0.6651160789766372\n    }\n  ]\n}\n```",
+  "conviction_level": "Medium",
+  "generation_status": "generated",
+  "max_risk": 670.0,
+  "max_reward": 16830.0,
+  "net_premium": -670.0
+}

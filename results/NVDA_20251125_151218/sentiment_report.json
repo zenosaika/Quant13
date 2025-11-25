@@ -1,0 +1,98 @@
+{
+  "agent": "SentimentAgent",
+  "ticker": "NVDA",
+  "overall_sentiment_score": 0.7278135169632025,
+  "overall_summary": "Multi-source sentiment analysis across 2 data source(s) indicates a strongly positive outlook (score=0.73, confidence=high).",
+  "articles": [
+    {
+      "title": "Google nears $4T: Could Alphabet stock mirror Nvidia's rise?",
+      "publisher": "Yahoo Finance Video",
+      "link": "https://finance.yahoo.com/video/google-nears-4t-could-alphabet-145040185.html",
+      "published_at": "2025-11-25T14:50:40+00:00",
+      "summary": "Alphabet (GOOG, GOOGL) stock has soared to a record high, fueled by artificial intelligence (AI) enthusiasm. Yahoo Finance Markets and Data Editor Jared Blikre examines the stock's recent moves compared to Nvidia's (NVDA).",
+      "sentiment_score": 1.0,
+      "rationale": "Enhanced lexical analysis: 7 positive, 0 negative terms"
+    },
+    {
+      "title": "Retail sales, Alphabet chips for Meta, Dick's earnings: 3 Things",
+      "publisher": "Yahoo Finance Video",
+      "link": "https://finance.yahoo.com/video/retail-sales-alphabet-chips-meta-141206404.html",
+      "published_at": "2025-11-25T14:12:06+00:00",
+      "summary": "US stock futures (ES=F, NQ=F, YM=F) are mixed in Tuesday's pre-market session after September's retail sales data rose by 0.2% (below economists' forecasts for 0.4% in that month), while September PPI (Producer Price Index) rose 0.3% in the month and 2.7% year-over-year. Accordin",
+      "sentiment_score": 1.0,
+      "rationale": "Enhanced lexical analysis: 5 positive, 0 negative terms"
+    },
+    {
+      "title": "Investors fearful of AI bubble burst are missing out: Strategist",
+      "publisher": "Yahoo Finance Video",
+      "link": "https://finance.yahoo.com/video/investors-fearful-ai-bubble-burst-214714340.html",
+      "published_at": "2025-11-24T21:47:14+00:00",
+      "summary": "Hennion & Walsh CIO Kevin Mahn doesn't believe the AI bubble is anywhere near bursting. Speaking with Josh Lipton on Market Domination Overtime, Mahn explains certain risk factors that could hinder the longevity of the current bull market while outlining why he agrees with Nvidia",
+      "sentiment_score": -0.6,
+      "rationale": "Enhanced lexical analysis: 2 positive, 8 negative terms"
+    },
+    {
+      "title": "Amazon to invest $50 billion in data centers to power US government AI efforts",
+      "publisher": "Yahoo Finance",
+      "link": "https://finance.yahoo.com/news/amazon-to-invest-50-billion-in-data-centers-to-power-us-government-ai-efforts-181259967.html",
+      "published_at": "2025-11-24T18:12:59+00:00",
+      "summary": "Amazon says it will spend $50 billion to expand its data center footprint for US government services.",
+      "sentiment_score": 1.0,
+      "rationale": "Enhanced lexical analysis: 4 positive, 0 negative terms"
+    },
+    {
+      "title": "Alibaba's Qwen AI draws 10M downloads, Trump-Nvidia latest",
+      "publisher": "Yahoo Finance Video",
+      "link": "https://finance.yahoo.com/video/alibabas-qwen-ai-draws-10m-154940444.html",
+      "published_at": "2025-11-24T15:49:40+00:00",
+      "summary": "Market Catalysts host Julie Hyman tracks several of the day's top trending stock tickers, including Alibaba (BABA, 9988.HK) after its AI app Qwen drew over 10 million downloads in its first week, Bloomberg reporting that the Trump administration continues to ponder over whether t",
+      "sentiment_score": 0.6,
+      "rationale": "Enhanced lexical analysis: 4 positive, 1 negative terms"
+    },
+    {
+      "title": "Nvidia Dives As Rival Makes Bid For AI Crown: Is Nvidia A Buy Or Sell Now?",
+      "publisher": "Investor's Business Daily",
+      "link": "https://www.investors.com/research/nvidia-nvda-stock-ai-chip-china/?src=A00220&yptr=yahoo",
+      "published_at": "2025-11-25T15:05:58+00:00",
+      "summary": "Nvidia falls on Tuesday amid reports that Meta is in talks to buy Alphabet's artificial intelligence chips.",
+      "sentiment_score": 0.6,
+      "rationale": "Enhanced lexical analysis: 4 positive, 1 negative terms"
+    },
+    {
+      "title": "Trump Trade: White House pauses EO preempting state laws on AI",
+      "publisher": "TipRanks",
+      "link": "https://finance.yahoo.com/news/trump-trade-white-house-pauses-150539501.html",
+      "published_at": "2025-11-25T15:05:39+00:00",
+      "summary": "Catch up on the top industries and stocks that were impacted, or were predicted to be impacted, by the comments, actions and policies of President Donald Trump with this daily recap compiled by The Fly. AI STATE LAWS: The White House has put on hold a draft executive order that w",
+      "sentiment_score": 0.7142857142857143,
+      "rationale": "Enhanced lexical analysis: 6 positive, 1 negative terms"
+    },
+    {
+      "title": "Stock Market Today: Dow Jones Wavers At Key Level, Techs Fall As Google AI Chip News Hits Nvidia, AMD",
+      "publisher": "Investor's Business Daily",
+      "link": "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp-500-nasdaq-google-ai-chip-nvidia-amd/?src=A00220&yptr=yahoo",
+      "published_at": "2025-11-25T14:54:17+00:00",
+      "summary": "Futures wavered as the market rebound faces a key test. Nvidia and AMD fell on a report that Meta will buy Google AI chips.",
+      "sentiment_score": 0.3333333333333333,
+      "rationale": "Enhanced lexical analysis: 2 positive, 1 negative terms"
+    },
+    {
+      "title": "Alphabet AI Chips, Gemini Model Position It to Rival Nvidia",
+      "publisher": "Bloomberg",
+      "link": "https://finance.yahoo.com/news/alphabet-rally-threatens-world-most-104028610.html",
+      "published_at": "2025-11-25T14:40:03+00:00",
+      "summary": "Gains this year have left the Google parent about $300 billion away from Nvidia’s $4.2 trillion market cap. Meta Platforms Inc.",
+      "sentiment_score": 0.25,
+      "rationale": "Enhanced lexical analysis: 5 positive, 3 negative terms"
+    },
+    {
+      "title": "Google In Talks To Offer Its AI Chips To Meta; Nvidia, AMD Fall",
+      "publisher": "Investor's Business Daily",
+      "link": "https://www.investors.com/news/technology/google-in-talks-ai-chips-meta-nvidia-amd/?src=A00220&yptr=yahoo",
+      "published_at": "2025-11-25T14:38:34+00:00",
+      "summary": "Google is in talks with Meta and others to let them use its Tensor AI chips. Google and partner Broadcom rose late.",
+      "sentiment_score": 0.3333333333333333,
+      "rationale": "Enhanced lexical analysis: 2 positive, 1 negative terms"
+    }
+  ]
+}

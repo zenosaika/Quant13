@@ -1,0 +1,17 @@
+{
+  "tickers": [
+    "NVDA"
+  ],
+  "strategies": [
+    "quant13",
+    "technical",
+    "chimpanzee"
+  ],
+  "start_date": "2024-11-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "position_size_pct": 0.9,
+  "signal_frequency": "weekly",
+  "monitor_frequency": "daily",
+  "parallel_workers": 1
+}

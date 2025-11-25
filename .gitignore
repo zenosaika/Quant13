@@ -71,7 +71,7 @@ lerna-debug.log*
 
 # Cache & Results
 cache/
-results/
+# results/
 *.log
 
 # macOS

@@ -1,0 +1,70 @@
+{
+  "agent": "TechnicalAnalyst",
+  "ticker": "NVDA",
+  "indicators": {
+    "latest_close": 170.57650756835938,
+    "price_date": "2025-11-25T00:00:00-05:00",
+    "SMA_50": {
+      "value": 186.47033111572264,
+      "slope": 0.03182601928709975,
+      "price_relationship": "below"
+    },
+    "SMA_200": {
+      "value": 153.15474319458008,
+      "slope": 0.2473222961425799,
+      "price_relationship": "above"
+    },
+    "EMA_20": {
+      "value": 186.0534770301403,
+      "price_relationship": "below",
+      "slope": -0.9632976903821028
+    },
+    "Bollinger_Bands": {
+      "lower": 171.76217225174906,
+      "middle": 190.9798271179199,
+      "upper": 210.19748198409076,
+      "width": 38.43530973234169,
+      "price_position": -0.03084831868525316
+    },
+    "MACD_Signal": {
+      "macd": -2.8469283572523523,
+      "signal": -0.4327344320200302,
+      "histogram": -2.414193925232322,
+      "crossover": "bearish"
+    },
+    "RSI": {
+      "value": 32.925062947648584,
+      "regime": "neutral"
+    },
+    "Supertrend_Signal": {
+      "trend": "bearish",
+      "level": 208.01789865769464
+    },
+    "OBV_Trend": {
+      "value": 1174653250.0,
+      "trend": "falling"
+    },
+    "recent_candlestick_patterns": [
+      {
+        "date": "2025-11-20T00:00:00-05:00",
+        "pattern": "Marubozu",
+        "direction": "bearish"
+      },
+      {
+        "date": "2025-11-20T00:00:00-05:00",
+        "pattern": "Bearish Engulfing",
+        "direction": "bearish"
+      }
+    ],
+    "derived_signals": [],
+    "key_levels": {
+      "recent_high": 212.19000244140625,
+      "recent_low": 169.5500030517578
+    }
+  },
+  "llm_report": {
+    "technical_bias": "neutral",
+    "summary": "## Technical Analysis Report: NVDA\n\n**Date:** 2025-11-25\n**Latest Close:** $170.58\n\n### 1. Primary Trend Identification\n\nThe primary trend is **Bullish** but under significant short-term pressure.\n\n*   **SMA 50 ($186.47) vs. SMA 200 ($153.15):** The 50-day SMA is currently well above the 200-day SMA, indicating a **Golden Cross** structure and a long-term bullish trend.\n*   **Price Relationship:** However, the current price ($170.58) is **below** the SMA 50, signaling a short-term downtrend within the broader bullish structure. The price is still significantly **above** the SMA 200, confirming the long-term strength.\n\n### 2. Momentum Assessment\n\nMomentum is strongly **Bearish** and approaching oversold conditions.\n\n*   **RSI (32.93):** The RSI is in the lower end of the neutral zone, rapidly approaching the oversold threshold (30). This suggests strong selling pressure but also implies that a short-term bounce could be imminent if selling exhaustion occurs.\n*   **MACD Signal (Bearish Crossover):** The MACD (-2.85) is significantly below the Signal line (-0.43), resulting in a large negative histogram (-2.41). This confirms strong, accelerating bearish momentum. The recent crossover was bearish, indicating sellers are firmly in control.\n\n### 3. Volatility & Levels Analysis\n\nVolatility is moderate, and the price is testing a critical lower boundary.\n\n*   **Bollinger Bands:** The price ($170.58) is currently trading **below the Lower Bollinger Band ($171.76)**. This is a statistically rare event (a price position of -0.03) and suggests the stock is extremely stretched to the downside, often preceding a mean reversion or bounce.\n*   **Key Support Levels:**\n    *   **Immediate Support (Recent Low):** $169.55\n    *   **Major Support (SMA 200):** $153.15\n*   **Key Resistance Levels:**\n    *   **Immediate Resistance (Lower BB / EMA 20):** $171.76 (Lower BB) / $186.05 (EMA 20)\n    *   **Major Resistance (Supertrend):** $208.02\n\n### 4. Synthesis of Signals\n\nThe combined signals point to an overwhelming short-term bearish bias, despite the long-term bullish foundation.\n\n*   **Volume (OBV):** The OBV trend is **falling**, confirming that selling volume is dominating buying volume, validating the recent price decline.\n*   **Candlestick Patterns:** The recent **Marubozu** and **Bearish Engulfing** patterns are powerful bearish signals, indicating strong conviction from sellers and a lack of buyer interest.\n*   **Supertrend Signal:** The Supertrend remains firmly **bearish** with a level of $208.02, reinforcing the current downtrend.\n*   **Short-Term Bias:** The price is trading below all key short-term moving averages (EMA 20, SMA 50), the MACD is strongly negative, and the RSI is nearing oversold territory. The price breaking below the Lower Bollinger Band suggests a potential capitulation event.\n\n### Technical Outlook Summary\n\n| Metric | Status | Interpretation |\n| :--- | :--- | :--- |\n| **Primary Trend (Long-Term)** | Bullish (Golden Cross) | Underlying strength remains. |\n| **Short-Term Trend** | Bearish | Price below SMA 50 and EMA 20. |\n| **Momentum (RSI/MACD)** | Strongly Bearish | High selling pressure; RSI nearing oversold. |\n| **Volatility (BB)** | Extreme Downside | Price below Lower Bollinger Band. |\n| **Volume (OBV)** | Falling | Selling volume dominates. |\n| **Candlesticks** | Strongly Bearish | Confirms seller conviction. |\n\n**Overall Technical Bias:** **Bearish**\n\nThe stock is experiencing a sharp, high-conviction sell-off. While the long-term trend remains bullish, the short-term technicals are overwhelmingly negative. The price is extremely stretched to the downside (below the Lower BB and near the recent low), which could trigger a temporary relief bounce, but the overall momentum and trend indicators suggest further downside is likely unless key resistance levels are reclaimed.\n\n**Key Price Levels to Watch:**\n\n| Level Type | Price | Significance |\n| :--- | :--- | :--- |\n| **Critical Support** | **$169.55** | Recent low. A break below this level confirms continuation of the sharp downtrend. |\n| **Major Support** | **$153.15** | SMA 200. The ultimate line of defense for the long-term bullish trend. |\n| **Immediate Resistance** | **$171.76** | Lower Bollinger Band. Reclaiming this level is the first sign of a potential bounce. |\n| **Short-Term Resistance** | **$186.05** | EMA 20. Reclaiming this level would neutralize the short-term bearish bias. |"
+  },
+  "llm_raw": "## Technical Analysis Report: NVDA\n\n**Date:** 2025-11-25\n**Latest Close:** $170.58\n\n### 1. Primary Trend Identification\n\nThe primary trend is **Bullish** but under significant short-term pressure.\n\n*   **SMA 50 ($186.47) vs. SMA 200 ($153.15):** The 50-day SMA is currently well above the 200-day SMA, indicating a **Golden Cross** structure and a long-term bullish trend.\n*   **Price Relationship:** However, the current price ($170.58) is **below** the SMA 50, signaling a short-term downtrend within the broader bullish structure. The price is still significantly **above** the SMA 200, confirming the long-term strength.\n\n### 2. Momentum Assessment\n\nMomentum is strongly **Bearish** and approaching oversold conditions.\n\n*   **RSI (32.93):** The RSI is in the lower end of the neutral zone, rapidly approaching the oversold threshold (30). This suggests strong selling pressure but also implies that a short-term bounce could be imminent if selling exhaustion occurs.\n*   **MACD Signal (Bearish Crossover):** The MACD (-2.85) is significantly below the Signal line (-0.43), resulting in a large negative histogram (-2.41). This confirms strong, accelerating bearish momentum. The recent crossover was bearish, indicating sellers are firmly in control.\n\n### 3. Volatility & Levels Analysis\n\nVolatility is moderate, and the price is testing a critical lower boundary.\n\n*   **Bollinger Bands:** The price ($170.58) is currently trading **below the Lower Bollinger Band ($171.76)**. This is a statistically rare event (a price position of -0.03) and suggests the stock is extremely stretched to the downside, often preceding a mean reversion or bounce.\n*   **Key Support Levels:**\n    *   **Immediate Support (Recent Low):** $169.55\n    *   **Major Support (SMA 200):** $153.15\n*   **Key Resistance Levels:**\n    *   **Immediate Resistance (Lower BB / EMA 20):** $171.76 (Lower BB) / $186.05 (EMA 20)\n    *   **Major Resistance (Supertrend):** $208.02\n\n### 4. Synthesis of Signals\n\nThe combined signals point to an overwhelming short-term bearish bias, despite the long-term bullish foundation.\n\n*   **Volume (OBV):** The OBV trend is **falling**, confirming that selling volume is dominating buying volume, validating the recent price decline.\n*   **Candlestick Patterns:** The recent **Marubozu** and **Bearish Engulfing** patterns are powerful bearish signals, indicating strong conviction from sellers and a lack of buyer interest.\n*   **Supertrend Signal:** The Supertrend remains firmly **bearish** with a level of $208.02, reinforcing the current downtrend.\n*   **Short-Term Bias:** The price is trading below all key short-term moving averages (EMA 20, SMA 50), the MACD is strongly negative, and the RSI is nearing oversold territory. The price breaking below the Lower Bollinger Band suggests a potential capitulation event.\n\n### Technical Outlook Summary\n\n| Metric | Status | Interpretation |\n| :--- | :--- | :--- |\n| **Primary Trend (Long-Term)** | Bullish (Golden Cross) | Underlying strength remains. |\n| **Short-Term Trend** | Bearish | Price below SMA 50 and EMA 20. |\n| **Momentum (RSI/MACD)** | Strongly Bearish | High selling pressure; RSI nearing oversold. |\n| **Volatility (BB)** | Extreme Downside | Price below Lower Bollinger Band. |\n| **Volume (OBV)** | Falling | Selling volume dominates. |\n| **Candlesticks** | Strongly Bearish | Confirms seller conviction. |\n\n**Overall Technical Bias:** **Bearish**\n\nThe stock is experiencing a sharp, high-conviction sell-off. While the long-term trend remains bullish, the short-term technicals are overwhelmingly negative. The price is extremely stretched to the downside (below the Lower BB and near the recent low), which could trigger a temporary relief bounce, but the overall momentum and trend indicators suggest further downside is likely unless key resistance levels are reclaimed.\n\n**Key Price Levels to Watch:**\n\n| Level Type | Price | Significance |\n| :--- | :--- | :--- |\n| **Critical Support** | **$169.55** | Recent low. A break below this level confirms continuation of the sharp downtrend. |\n| **Major Support** | **$153.15** | SMA 200. The ultimate line of defense for the long-term bullish trend. |\n| **Immediate Resistance** | **$171.76** | Lower Bollinger Band. Reclaiming this level is the first sign of a potential bounce. |\n| **Short-Term Resistance** | **$186.05** | EMA 20. Reclaiming this level would neutralize the short-term bearish bias. |"
+}

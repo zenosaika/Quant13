@@ -1,0 +1,4 @@
+strategy_name,total_return_pct_mean,total_return_pct_std,total_return_pct_min,total_return_pct_max,sharpe_ratio_mean,sharpe_ratio_std,sharpe_ratio_min,sharpe_ratio_max,win_rate_mean,win_rate_std,max_drawdown_mean,max_drawdown_min,num_trades_sum
+chimpanzee,-18.67,,-18.67,-18.67,-3.79,,-3.79,-3.79,0.67,,-0.2,-0.2,3
+quant13,2.61,,2.61,2.61,5.04,,5.04,5.04,1.0,,-0.0,-0.0,3
+technical,1.15,,1.15,1.15,3.55,,3.55,3.55,1.0,,0.0,0.0,1
