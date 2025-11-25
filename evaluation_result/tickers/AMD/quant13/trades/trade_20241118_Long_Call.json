@@ -1,0 +1,442 @@
+{
+  "trade_id": "20241118_Long Call",
+  "execution": {
+    "entry_date": "2024-11-18T00:00:00",
+    "closed_date": "2024-11-27T00:00:00",
+    "expiration_date": "2024-12-20",
+    "days_held": 9
+  },
+  "market_context": {
+    "iv_rank": 48.25,
+    "atm_iv": 0.4656,
+    "historical_vol": 0.4656,
+    "regime": "Normal Downtrend",
+    "technical_sentiment": "Bearish"
+  },
+  "trade_proposal": {
+    "agent": "SystematicTraderAgent",
+    "strategy_name": "Long Call",
+    "action": "BUY_TO_OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00135000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 135.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 0.6212392264359008,
+          "gamma": 0.019843799044451757,
+          "theta": -0.12437939586867239,
+          "vega": 0.15647194104432888,
+          "impliedVolatility": null
+        }
+      }
+    ],
+    "notes": "## Trade Rationale: Long Call Strategy Against a Bearish Thesis\n\nGood morning. Based on our medium-conviction bearish thesis for the underlying asset, the proposed strategy is a **Long Call** at the $135.00 strike. On the surface, this strategy appears fundamentally mismatched with our directional view, as a Long Call is typically a maximum bullish conviction play designed to profit from significant upward movement. We must acknowledge this conflict immediately: **a Long Call is inherently a bullish instrument, and its selection here runs directly counter to our established bearish outlook.** The selection score of -50.0 strongly reinforces this concern, indicating a high probability of directional error if our bearish thesis proves correct.\n\nGiven the constraint to maintain the bearish thesis, the only viable rationale for initiating a Long Call is to use it as a **highly specific, tactical hedge against a sudden, sharp reversal or \"short squeeze\" scenario**, rather than a primary profit driver. Alternatively, it could be a deliberate attempt to capitalize on a short-term technical bounce *before* the expected bearish move takes hold, or perhaps a bet on implied volatility expansion (though the IV Rank of 48.2 suggests stable volatility). The trade structure involves **buying the 135.00 strike Call option**, which has a current Delta of approximately 0.62. This means we are buying an in-the-money or near-the-money option, giving us immediate positive exposure to upward price movement. Our maximum risk is limited to the premium paid for the call, while the potential profit is theoretically unlimited if the stock moves significantly higher.\n\nThe primary risk here is directional: **if our medium-conviction bearish thesis is correct, this trade will lose money.** If the stock declines, the premium paid for the call will erode rapidly, resulting in a 100% loss of capital allocated to this leg. Furthermore, while the IV Rank is moderate, if volatility contracts (which often happens during a steady decline), the option's value will suffer from negative Vega. We must closely monitor the $138.93 current price level. If the stock begins to move lower, consistent with our bearish view, this Long Call position should be liquidated quickly to preserve capital. This trade should be viewed strictly as a tactical, high-risk deviation or hedge, not a core component of a bearish strategy.\n\n```json\n{\n  \"strategy\": \"Long Call\",\n  \"legs\": [\n    {\n      \"action\": \"BUY\",\n      \"type\": \"CALL\",\n      \"strike\": 135.0,\n      \"delta\": 0.6212392264359008\n    }\n  ]\n}\n```",
+    "conviction_level": "Medium",
+    "generation_status": "generated",
+    "max_risk": 999.1612000894704,
+    "max_reward": null,
+    "net_premium": -999.1612000894704
+  },
+  "position_details": {
+    "strategy_name": "Long Call",
+    "agent_name": "SystematicTraderAgent",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00135000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 135.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 0.5691778175220492,
+          "gamma": 0.029364996252904348,
+          "theta": -0.12407502378741292,
+          "vega": 0.1343806003798246,
+          "rho": 0.044971325083818556
+        }
+      }
+    ],
+    "thesis_direction": "Bullish"
+  },
+  "pricing": {
+    "entry_price": -1024.140230091707,
+    "exit_price": 602.28675,
+    "spot_at_entry": 138.92999267578125,
+    "spot_at_exit": 136.24000549316406
+  },
+  "performance": {
+    "pnl": -421.85348009170707,
+    "pnl_pct": -41.19098807923326,
+    "status": "closed",
+    "highest_pnl_pct": 0.0
+  },
+  "position_greeks": {
+    "net_delta": 0.5692,
+    "net_gamma": 0.0294,
+    "net_theta": -0.1241,
+    "net_vega": 0.1344,
+    "net_rho": 0.045,
+    "delta_dollars": 7754.48,
+    "theta_daily_dollars": -12.41,
+    "vega_dollars": 13.44
+  },
+  "agent_reports": {
+    "volatility": "agent='VolatilityModelingAgent' ticker='AMD' iv_rank=43.22994358406901 volatility_forecast='Volatility stable relative to recent history.' skew_analysis='Near-the-money skew is balanced between calls and puts.' term_structure='Flat term structure between near and far expirations.'",
+    "sentiment": "agent='SyntheticMeanReversion' ticker='AMD' overall_sentiment_score=-0.4 overall_summary='Moderate trend. SMA separation: 6.7%, RSI: 49.2.' articles=[ArticleSentiment(title='AMD moderate trend', publisher='Mean Reversion Logic', link=None, published_at=None, summary=None, sentiment_score=-0.4, rationale='Moderate trend (6.7%) with neutral RSI (49.2).')]",
+    "technical": "agent='TechnicalAnalyst' ticker='AMD' indicators=TechnicalIndicators(latest_close=141.1300048828125, price_date='2024-11-25T00:00:00-05:00', SMA_50={'value': 153.45260162353514, 'slope': -0.25627990722657695, 'price_relationship': 'below'}, SMA_200={'value': None, 'slope': None, 'price_relationship': None}, EMA_20={'value': 143.3692382515573, 'price_relationship': 'below', 'slope': -0.5765006677465541}, Bollinger_Bands={'lower': 129.83061739594163, 'middle': 143.14650268554686, 'upper': 156.4623879751521, 'width': 26.631770579210468, 'price_position': 0.42428224789873714}, MACD_Signal={'macd': -4.276997872452711, 'signal': -4.366009534496968, 'histogram': 0.08901166204425692, 'crossover': 'bullish'}, RSI={'value': 49.19963979873708, 'regime': 'neutral'}, Supertrend_Signal={'trend': 'bearish', 'level': 166.4041563044925}, OBV_Trend={'value': -590452500.0, 'trend': 'rising'}, recent_candlestick_patterns=[], derived_signals=[], key_levels={'recent_high': 167.50999450683594, 'recent_low': 133.64999389648438}) llm_report={'technical_bias': 'neutral', 'summary': '## Technical Analysis Report: AMD\\n\\n### 1. Primary Trend Identification\\n\\nThe primary trend cannot be definitively established using the 50/200-day SMA relationship as the 200-day SMA value is currently unavailable. However, the price is significantly **below the 50-day SMA** ($141.13 vs $153.45), and the 50-day SMA slope is negative, suggesting a **medium-term bearish bias**. The price is also below the short-term 20-day EMA ($143.37), reinforcing the current downward pressure.\\n\\n### 2. Momentum Assessment\\n\\nMomentum indicators suggest a shift toward neutral/positive territory:\\n*   **RSI (49.20):** The RSI is firmly in the **neutral zone** (neither overbought nor oversold), indicating balanced buying and selling pressure.\\n*   **MACD:** The MACD line (-4.28) has crossed **above** the Signal line (-4.37), generating a **bullish crossover**. The histogram is positive (0.09), signaling that short-term momentum is turning positive, potentially indicating the end of the recent selling wave.\\n\\n### 3. Volatility and Key Levels\\n\\n*   **Volatility (Bollinger Bands):** The price ($141.13) is positioned near the **lower half** of the Bollinger Bands (42% from the bottom), but still comfortably above the lower band ($129.83). This suggests the price is not currently at an extreme oversold level within the recent volatility range. The wide band width (26.6%) indicates high volatility.\\n*   **Support and Resistance:**\\n    *   **Immediate Resistance:** 20-day EMA ($143.37) and Bollinger Band Middle Line ($143.15). A break above this level is crucial for short-term recovery.\\n    *   **Major Resistance:** 50-day SMA ($153.45) and Supertrend Bearish Level ($166.40).\\n    *   **Immediate Support:** Recent Low ($133.65) and Bollinger Band Lower Line ($129.83).\\n\\n### 4. Synthesis of Signals and Short-Term Bias\\n\\nThe overall technical picture presents conflicting signals, leaning toward a **neutral-to-cautiously-bullish short-term bias** due to momentum shifts:\\n\\n*   **Bearish Signals:** The price remains below the key moving averages (SMA 50, EMA 20), and the Supertrend indicator is firmly **bearish**.\\n*   **Bullish/Reversal Signals:** The **MACD has generated a bullish crossover**, suggesting that the downward momentum is stalling and a short-term bounce may be underway. The **OBV trend is rising**, which is a positive divergence, indicating that accumulation is occurring despite the recent price decline.\\n\\nThe lack of strong candlestick patterns suggests indecision at the current price level. The rising OBV and bullish MACD crossover are strong indicators that buyers are stepping in near the recent lows.\\n\\n### Technical Outlook Summary\\n\\n| Metric | Finding | Implication |\\n| :--- | :--- | :--- |\\n| **Primary Trend** | Below SMA 50 (Negative Slope) | Medium-term bearish pressure. |\\n| **Momentum (MACD)** | Bullish Crossover | Short-term momentum turning positive. |\\n| **RSI** | 49.20 (Neutral) | Balanced market, room for upward movement. |\\n| **Supertrend** | Bearish | Confirms established downtrend. |\\n| **Volume (OBV)** | Rising Trend | Accumulation/buying interest is increasing. |\\n\\n| **Technical Bias** | **Neutral** |\\n| :--- | :--- |\\n| **Rationale** | While the long-term trend remains bearish (below MAs, Supertrend bearish), the bullish MACD crossover and rising OBV suggest strong short-term buying interest and potential for a relief rally. The stock is currently consolidating near support. |\\n| **Key Resistance Levels** | $143.37 (EMA 20), $153.45 (SMA 50) |\\n| **Key Support Levels** | $133.65 (Recent Low), $129.83 (BB Lower) |'} llm_raw='## Technical Analysis Report: AMD\\n\\n### 1. Primary Trend Identification\\n\\nThe primary trend cannot be definitively established using the 50/200-day SMA relationship as the 200-day SMA value is currently unavailable. However, the price is significantly **below the 50-day SMA** ($141.13 vs $153.45), and the 50-day SMA slope is negative, suggesting a **medium-term bearish bias**. The price is also below the short-term 20-day EMA ($143.37), reinforcing the current downward pressure.\\n\\n### 2. Momentum Assessment\\n\\nMomentum indicators suggest a shift toward neutral/positive territory:\\n*   **RSI (49.20):** The RSI is firmly in the **neutral zone** (neither overbought nor oversold), indicating balanced buying and selling pressure.\\n*   **MACD:** The MACD line (-4.28) has crossed **above** the Signal line (-4.37), generating a **bullish crossover**. The histogram is positive (0.09), signaling that short-term momentum is turning positive, potentially indicating the end of the recent selling wave.\\n\\n### 3. Volatility and Key Levels\\n\\n*   **Volatility (Bollinger Bands):** The price ($141.13) is positioned near the **lower half** of the Bollinger Bands (42% from the bottom), but still comfortably above the lower band ($129.83). This suggests the price is not currently at an extreme oversold level within the recent volatility range. The wide band width (26.6%) indicates high volatility.\\n*   **Support and Resistance:**\\n    *   **Immediate Resistance:** 20-day EMA ($143.37) and Bollinger Band Middle Line ($143.15). A break above this level is crucial for short-term recovery.\\n    *   **Major Resistance:** 50-day SMA ($153.45) and Supertrend Bearish Level ($166.40).\\n    *   **Immediate Support:** Recent Low ($133.65) and Bollinger Band Lower Line ($129.83).\\n\\n### 4. Synthesis of Signals and Short-Term Bias\\n\\nThe overall technical picture presents conflicting signals, leaning toward a **neutral-to-cautiously-bullish short-term bias** due to momentum shifts:\\n\\n*   **Bearish Signals:** The price remains below the key moving averages (SMA 50, EMA 20), and the Supertrend indicator is firmly **bearish**.\\n*   **Bullish/Reversal Signals:** The **MACD has generated a bullish crossover**, suggesting that the downward momentum is stalling and a short-term bounce may be underway. The **OBV trend is rising**, which is a positive divergence, indicating that accumulation is occurring despite the recent price decline.\\n\\nThe lack of strong candlestick patterns suggests indecision at the current price level. The rising OBV and bullish MACD crossover are strong indicators that buyers are stepping in near the recent lows.\\n\\n### Technical Outlook Summary\\n\\n| Metric | Finding | Implication |\\n| :--- | :--- | :--- |\\n| **Primary Trend** | Below SMA 50 (Negative Slope) | Medium-term bearish pressure. |\\n| **Momentum (MACD)** | Bullish Crossover | Short-term momentum turning positive. |\\n| **RSI** | 49.20 (Neutral) | Balanced market, room for upward movement. |\\n| **Supertrend** | Bearish | Confirms established downtrend. |\\n| **Volume (OBV)** | Rising Trend | Accumulation/buying interest is increasing. |\\n\\n| **Technical Bias** | **Neutral** |\\n| :--- | :--- |\\n| **Rationale** | While the long-term trend remains bearish (below MAs, Supertrend bearish), the bullish MACD crossover and rising OBV suggest strong short-term buying interest and potential for a relief rally. The stock is currently consolidating near support. |\\n| **Key Resistance Levels** | $143.37 (EMA 20), $153.45 (SMA 50) |\\n| **Key Support Levels** | $133.65 (Recent Low), $129.83 (BB Lower) |'",
+    "fundamental": "agent='FundamentalAnalyst' ticker='AMD' generated_at='2025-11-25T10:50:12.586816+00:00' data_source='cache' business_overview={'longBusinessSummary': None, 'sector': None, 'industry': None, 'marketCap': None, 'forwardPE': None, 'pegRatio': None} financial_ratios=FinancialRatios(pe_ratio=None, ps_ratio=None, debt_to_equity=None, current_ratio=None) financial_trends=[] qualitative_summary=QualitativeSummary(mdna_summary={'summary': 'Section unavailable.'}, risk_factors=[{'risk': 'Section unavailable.'}]) llm_synthesis={'overall_thesis': 'neutral', 'reasoning': \"## Fundamental Analysis Report: Advanced Micro Devices (AMD)\\n\\n**Analyst:** Meticulous Fundamental Analyst\\n**Date:** October 26, 2023\\n\\n---\\n\\n### Data Synthesis and Limitations\\n\\nThe provided data for AMD is severely limited. All key quantitative financial ratios (P/E, P/S, D/E, Current Ratio) are missing, as are multi-year financial trends. Furthermore, the qualitative summaries for 'Management's Discussion & Analysis' (MD&A) and 'Risk Factors' are unavailable.\\n\\n**Conclusion on Data Quality:** The lack of fundamental financial data and critical qualitative disclosures (10-K/10-Q summaries) makes a definitive, data-driven intrinsic valuation or business quality assessment impossible. The analysis below relies on general industry knowledge and the limited insider activity data provided.\\n\\n---\\n\\n### SWOT Analysis (Based on Limited Data & Industry Context)\\n\\n| Category | Analysis |\\n| :--- | :--- |\\n| **Strengths** | **(Inferred)** Strong position in high-growth markets (Data Center/AI, Gaming). Competitive product portfolio (Ryzen, EPYC, Radeon). Strategic acquisition of Xilinx (diversification into FPGAs and embedded systems). |\\n| **Weaknesses** | **(Inferred)** High capital expenditure requirements. Dependence on third-party foundries (TSMC), creating supply chain risk. Historically lower margins compared to primary competitor (NVIDIA/Intel). |\\n| **Opportunities** | **AI/Machine Learning Acceleration:** Significant runway in the data center market with MI series accelerators. **Cloud Computing:** Continued penetration of EPYC processors into hyperscalers. **Edge Computing:** Expansion into embedded and specialized markets via Xilinx technology. |\\n| **Threats** | **Intense Competition:** Direct rivalry with Intel (CPUs) and NVIDIA (GPUs/AI). **Technological Obsolescence:** Rapid pace of innovation requires constant R&D investment. **Macroeconomic Headwinds:** Cyclical downturns in PC and consumer electronics markets. |\\n\\n---\\n\\n### Financial Health\\n\\n| Metric | Rating | Justification |\\n| :--- | :--- | :--- |\\n| **Quantitative Data** | **Insufficient Data** | All critical financial ratios (P/E, P/S, D/E, Current Ratio) and trend data are missing. A financial health assessment cannot be performed. |\\n| **Insider Activity** | **Neutral (Low Confidence)** | Insider activity shows 0 buys and 0 sells, indicating no strong directional signal from management or key stakeholders. The transactions listed are generic and lack specific insider identification. |\\n\\n---\\n\\n### Overall Thesis\\n\\n**Fundamental Rating:** **Neutral (Data Constrained)**\\n\\n**Justification:**\\n\\nA definitive fundamental rating (bullish or bearish) cannot be assigned due to the complete absence of core financial data (valuation multiples, balance sheet health indicators, and growth trends).\\n\\n**If forced to speculate based on industry context:** AMD operates in a high-growth, high-margin sector (semiconductors, particularly data center and AI). However, the competitive landscape is brutal, and valuation is typically stretched. Without knowing the current P/E, P/S, debt levels, and recent revenue/margin trajectory, it is impossible to determine if the market is correctly pricing the company's growth potential versus its execution risks.\\n\\n**Recommendation:** **Hold** until the following critical data points are obtained and analyzed:\\n1. **Valuation Multiples:** Current P/E and P/S ratios relative to historical averages and peers.\\n2. **Growth Trajectory:** Multi-year Revenue and Net Income CAGR.\\n3. **Balance Sheet Strength:** Debt-to-Equity and Current Ratio to assess liquidity and solvency.\\n4. **Qualitative Disclosures:** MD&A and Risk Factors from the latest 10-K/10-Q to understand management's outlook and key operational risks.\"}",
+    "trade_thesis": "winning_argument='Bearish' conviction_level='Medium' summary='Strong bearish technical and sentiment signals (Score: -0.40). Downside momentum confirmed. Recommend bearish positioning.' key_evidence=['The On-Balance Volume (OBV) trend is rising despite the price falling, indicating a strong technical divergence where accumulation is occurring.', \"The MACD has generated a 'bullish crossover' (MACD: -4.277 > Signal: -4.366), signaling that short-term selling pressure is exhausting and positive momentum is building.\", 'The Relative Strength Index (RSI) is neutral (49.20), providing significant technical headroom for a sustained relief rally.', 'The bearish argument relies on lagging indicators (price below SMA 50, Supertrend bearish) which are contradicted by the leading momentum and volume metrics (MACD, OBV).']"
+  },
+  "greeks_history": [
+    {
+      "date": "2024-11-18T00:00:00",
+      "spot_price": 138.92999267578125,
+      "net_delta": 0.6279,
+      "net_gamma": 0.0217,
+      "net_theta": -0.1137,
+      "net_vega": 0.1556,
+      "net_rho": 0.0683,
+      "delta_dollars": 8723.5,
+      "theta_daily_dollars": -11.37,
+      "vega_dollars": 15.56
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "spot_price": 139.38999938964844,
+      "net_delta": 0.6341,
+      "net_gamma": 0.0206,
+      "net_theta": -0.1213,
+      "net_vega": 0.1528,
+      "net_rho": 0.0667,
+      "delta_dollars": 8838.41,
+      "theta_daily_dollars": -12.13,
+      "vega_dollars": 15.28
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "spot_price": 139.38999938964844,
+      "net_delta": 0.6341,
+      "net_gamma": 0.0206,
+      "net_theta": -0.1213,
+      "net_vega": 0.1528,
+      "net_rho": 0.0667,
+      "delta_dollars": 8838.41,
+      "theta_daily_dollars": -12.13,
+      "vega_dollars": 15.28
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "spot_price": 137.60000610351562,
+      "net_delta": 0.5951,
+      "net_gamma": 0.0212,
+      "net_theta": -0.1283,
+      "net_vega": 0.1529,
+      "net_rho": 0.06,
+      "delta_dollars": 8188.72,
+      "theta_daily_dollars": -12.83,
+      "vega_dollars": 15.29
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "spot_price": 137.60000610351562,
+      "net_delta": 0.5951,
+      "net_gamma": 0.0212,
+      "net_theta": -0.1283,
+      "net_vega": 0.1529,
+      "net_rho": 0.06,
+      "delta_dollars": 8188.72,
+      "theta_daily_dollars": -12.83,
+      "vega_dollars": 15.29
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "spot_price": 137.49000549316406,
+      "net_delta": 0.5961,
+      "net_gamma": 0.0231,
+      "net_theta": -0.1223,
+      "net_vega": 0.1501,
+      "net_rho": 0.0586,
+      "delta_dollars": 8195.34,
+      "theta_daily_dollars": -12.23,
+      "vega_dollars": 15.01
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "spot_price": 137.49000549316406,
+      "net_delta": 0.5961,
+      "net_gamma": 0.0231,
+      "net_theta": -0.1223,
+      "net_vega": 0.1501,
+      "net_rho": 0.0586,
+      "delta_dollars": 8195.34,
+      "theta_daily_dollars": -12.23,
+      "vega_dollars": 15.01
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.6097,
+      "net_gamma": 0.0207,
+      "net_theta": -0.1374,
+      "net_vega": 0.1471,
+      "net_rho": 0.0575,
+      "delta_dollars": 8434.84,
+      "theta_daily_dollars": -13.74,
+      "vega_dollars": 14.71
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.6097,
+      "net_gamma": 0.0207,
+      "net_theta": -0.1374,
+      "net_vega": 0.1471,
+      "net_rho": 0.0575,
+      "delta_dollars": 8434.84,
+      "theta_daily_dollars": -13.74,
+      "vega_dollars": 14.71
+    },
+    {
+      "date": "2024-11-23T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.6103,
+      "net_gamma": 0.0211,
+      "net_theta": -0.1397,
+      "net_vega": 0.1443,
+      "net_rho": 0.0556,
+      "delta_dollars": 8443.5,
+      "theta_daily_dollars": -13.97,
+      "vega_dollars": 14.43
+    },
+    {
+      "date": "2024-11-23T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.6103,
+      "net_gamma": 0.0211,
+      "net_theta": -0.1397,
+      "net_vega": 0.1443,
+      "net_rho": 0.0556,
+      "delta_dollars": 8443.5,
+      "theta_daily_dollars": -13.97,
+      "vega_dollars": 14.43
+    },
+    {
+      "date": "2024-11-24T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.611,
+      "net_gamma": 0.0214,
+      "net_theta": -0.1421,
+      "net_vega": 0.1416,
+      "net_rho": 0.0537,
+      "delta_dollars": 8453.0,
+      "theta_daily_dollars": -14.21,
+      "vega_dollars": 14.16
+    },
+    {
+      "date": "2024-11-24T00:00:00",
+      "spot_price": 138.35000610351562,
+      "net_delta": 0.611,
+      "net_gamma": 0.0214,
+      "net_theta": -0.1421,
+      "net_vega": 0.1416,
+      "net_rho": 0.0537,
+      "delta_dollars": 8453.0,
+      "theta_daily_dollars": -14.21,
+      "vega_dollars": 14.16
+    },
+    {
+      "date": "2024-11-25T00:00:00",
+      "spot_price": 141.1300048828125,
+      "net_delta": 0.6993,
+      "net_gamma": 0.0243,
+      "net_theta": -0.1118,
+      "net_vega": 0.1286,
+      "net_rho": 0.0611,
+      "delta_dollars": 9869.52,
+      "theta_daily_dollars": -11.18,
+      "vega_dollars": 12.86
+    },
+    {
+      "date": "2024-11-25T00:00:00",
+      "spot_price": 141.1300048828125,
+      "net_delta": 0.6993,
+      "net_gamma": 0.0243,
+      "net_theta": -0.1118,
+      "net_vega": 0.1286,
+      "net_rho": 0.0611,
+      "delta_dollars": 9869.52,
+      "theta_daily_dollars": -11.18,
+      "vega_dollars": 12.86
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 137.72000122070312,
+      "net_delta": 0.6003,
+      "net_gamma": 0.0235,
+      "net_theta": -0.1426,
+      "net_vega": 0.1364,
+      "net_rho": 0.049,
+      "delta_dollars": 8267.84,
+      "theta_daily_dollars": -14.26,
+      "vega_dollars": 13.64
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 137.72000122070312,
+      "net_delta": 0.6003,
+      "net_gamma": 0.0235,
+      "net_theta": -0.1426,
+      "net_vega": 0.1364,
+      "net_rho": 0.049,
+      "delta_dollars": 8267.84,
+      "theta_daily_dollars": -14.26,
+      "vega_dollars": 13.64
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "spot_price": 136.24000549316406,
+      "net_delta": 0.5692,
+      "net_gamma": 0.0294,
+      "net_theta": -0.1241,
+      "net_vega": 0.1344,
+      "net_rho": 0.045,
+      "delta_dollars": 7754.48,
+      "theta_daily_dollars": -12.41,
+      "vega_dollars": 13.44
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "spot_price": 136.24000549316406,
+      "net_delta": 0.5692,
+      "net_gamma": 0.0294,
+      "net_theta": -0.1241,
+      "net_vega": 0.1344,
+      "net_rho": 0.045,
+      "delta_dollars": 7754.48,
+      "theta_daily_dollars": -12.41,
+      "vega_dollars": 13.44
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-11-18T00:00:00",
+      "current_value": 933.47,
+      "pnl": -90.67023009170703,
+      "pnl_pct": -8.853302255647932
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "current_value": 988.72,
+      "pnl": -35.420230091707026,
+      "pnl_pct": -3.458533221425674
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "current_value": 988.72,
+      "pnl": -35.420230091707026,
+      "pnl_pct": -3.458533221425674
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "current_value": 890.58,
+      "pnl": -133.560230091707,
+      "pnl_pct": -13.041205312259564
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "current_value": 890.58,
+      "pnl": -133.560230091707,
+      "pnl_pct": -13.041205312259564
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "current_value": 824.62,
+      "pnl": -199.52023009170705,
+      "pnl_pct": -19.48172957465414
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "current_value": 824.62,
+      "pnl": -199.52023009170705,
+      "pnl_pct": -19.48172957465414
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "current_value": 938.67,
+      "pnl": -85.4702300917071,
+      "pnl_pct": -8.345559287721137
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "current_value": 938.67,
+      "pnl": -85.4702300917071,
+      "pnl_pct": -8.345559287721137
+    },
+    {
+      "date": "2024-11-23T00:00:00",
+      "current_value": 924.82,
+      "pnl": -99.320230091707,
+      "pnl_pct": -9.697913154218474
+    },
+    {
+      "date": "2024-11-23T00:00:00",
+      "current_value": 924.82,
+      "pnl": -99.320230091707,
+      "pnl_pct": -9.697913154218474
+    },
+    {
+      "date": "2024-11-24T00:00:00",
+      "current_value": 910.73,
+      "pnl": -113.41023009170704,
+      "pnl_pct": -11.073701311543212
+    },
+    {
+      "date": "2024-11-24T00:00:00",
+      "current_value": 910.73,
+      "pnl": -113.41023009170704,
+      "pnl_pct": -11.073701311543212
+    },
+    {
+      "date": "2024-11-25T00:00:00",
+      "current_value": 947.68,
+      "pnl": -76.4602300917071,
+      "pnl_pct": -7.465796952909509
+    },
+    {
+      "date": "2024-11-25T00:00:00",
+      "current_value": 947.68,
+      "pnl": -76.4602300917071,
+      "pnl_pct": -7.465796952909509
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 818.86,
+      "pnl": -205.28023009170704,
+      "pnl_pct": -20.04415255451152
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 818.86,
+      "pnl": -205.28023009170704,
+      "pnl_pct": -20.04415255451152
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "current_value": 617.73,
+      "pnl": -406.41023009170704,
+      "pnl_pct": -39.68306469664949
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "current_value": 617.73,
+      "pnl": -406.41023009170704,
+      "pnl_pct": -39.68306469664949
+    }
+  ]
+}

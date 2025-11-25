@@ -1,0 +1,176 @@
+{
+  "trade_id": "20240902_Bull Call Spread",
+  "execution": {
+    "entry_date": "2024-09-02T00:00:00",
+    "closed_date": "2024-09-03T00:00:00",
+    "expiration_date": "2024-10-04",
+    "days_held": 1
+  },
+  "market_context": {
+    "iv_rank": 0.41,
+    "atm_iv": 0.2186,
+    "historical_vol": 0.2185,
+    "regime": "Normal Ranging",
+    "technical_sentiment": "Bullish"
+  },
+  "trade_proposal": {
+    "agent": "ChimpanzeeBaseline",
+    "strategy_name": "Bull Call Spread",
+    "action": "OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241004_00205000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 205.0,
+        "expiration_date": "2024-10-04",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 0.9572673762151664,
+          "gamma": 0.006153217005126869,
+          "theta": -0.04757917534453727,
+          "vega": 0.06130037931692001
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_240927_00280000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 280.0,
+        "expiration_date": "2024-09-27",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 0.00023120123955191514,
+          "gamma": 6.618342845802275e-05,
+          "theta": -0.00023462107198855153,
+          "vega": 0.0005171104991883766
+        }
+      }
+    ],
+    "notes": "Random Bullish selection",
+    "conviction_level": "Low",
+    "generation_status": "generated",
+    "max_risk": null,
+    "max_reward": null,
+    "net_premium": null
+  },
+  "position_details": {
+    "strategy_name": "Bull Call Spread",
+    "agent_name": "ChimpanzeeBaseline",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241004_00205000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 205.0,
+        "expiration_date": "2024-10-04",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 0.8917515771666853,
+          "gamma": 0.012334133200901343,
+          "theta": -0.06974909031470593,
+          "vega": 0.12000081596355322,
+          "rho": 0.15231920541386237
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_240927_00280000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 280.0,
+        "expiration_date": "2024-09-27",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": 6.440345853376189e-05,
+          "gamma": 1.9731799895742133e-05,
+          "theta": -7.420742448835232e-05,
+          "vega": 0.0001486249820941268,
+          "rho": 9.251362682928134e-06
+        }
+      }
+    ],
+    "thesis_direction": "Bullish"
+  },
+  "pricing": {
+    "entry_price": -2445.7406635772704,
+    "exit_price": 1774.5,
+    "spot_at_entry": 227.71841430664062,
+    "spot_at_exit": 221.52330017089844
+  },
+  "performance": {
+    "pnl": -671.2406635772704,
+    "pnl_pct": -27.445291873075295,
+    "status": "closed",
+    "highest_pnl_pct": 0.0
+  },
+  "position_greeks": {
+    "net_delta": 0.8917,
+    "net_gamma": 0.0123,
+    "net_theta": -0.0697,
+    "net_vega": 0.1199,
+    "net_rho": 0.1523,
+    "delta_dollars": 19752.95,
+    "theta_daily_dollars": -6.97,
+    "vega_dollars": 11.99
+  },
+  "agent_reports": {},
+  "greeks_history": [
+    {
+      "date": "2024-09-02T00:00:00",
+      "spot_price": 227.71841430664062,
+      "net_delta": 0.9517,
+      "net_gamma": 0.0064,
+      "net_theta": -0.0499,
+      "net_vega": 0.0665,
+      "net_rho": 0.169,
+      "delta_dollars": 21673.09,
+      "theta_daily_dollars": -4.99,
+      "vega_dollars": 6.65
+    },
+    {
+      "date": "2024-09-03T00:00:00",
+      "spot_price": 221.52330017089844,
+      "net_delta": 0.8917,
+      "net_gamma": 0.0123,
+      "net_theta": -0.0697,
+      "net_vega": 0.1199,
+      "net_rho": 0.1523,
+      "delta_dollars": 19752.95,
+      "theta_daily_dollars": -6.97,
+      "vega_dollars": 11.99
+    },
+    {
+      "date": "2024-09-03T00:00:00",
+      "spot_price": 221.52330017089844,
+      "net_delta": 0.8917,
+      "net_gamma": 0.0123,
+      "net_theta": -0.0697,
+      "net_vega": 0.1199,
+      "net_rho": 0.1523,
+      "delta_dollars": 19752.95,
+      "theta_daily_dollars": -6.97,
+      "vega_dollars": 11.99
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-09-02T00:00:00",
+      "current_value": 2392.55,
+      "pnl": -53.19066357727024,
+      "pnl_pct": -2.1748284423365947
+    },
+    {
+      "date": "2024-09-03T00:00:00",
+      "current_value": 1820.0,
+      "pnl": -625.7406635772704,
+      "pnl_pct": -25.584914741615687
+    },
+    {
+      "date": "2024-09-03T00:00:00",
+      "current_value": 1820.0,
+      "pnl": -625.7406635772704,
+      "pnl_pct": -25.584914741615687
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "ticker": "AMD",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 7867.743788466855,
+  "total_return": -2132.256211533145,
+  "total_return_pct": -21.322562115331447,
+  "num_trades": 13,
+  "num_winners": 4,
+  "num_losers": 9,
+  "win_rate": 0.3076923076923077,
+  "average_pnl": -164.0197085794727,
+  "max_drawdown": -0.2135147331384598,
+  "sharpe_ratio": -3.459278997716601
+}

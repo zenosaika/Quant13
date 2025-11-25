@@ -47,6 +47,57 @@ class TradeExecution:
     status: str = "open"  # open, closed, expired
     highest_pnl_pct: float = 0.0  # For trailing stop logic
 
+    # NEW: Enhanced logging for multi-ticker evaluation
+    market_data: Optional[Dict[str, Any]] = None  # IV rank, regime, sentiment at entry
+    agent_reports: Optional[Dict[str, Any]] = None  # All agent outputs (for Quant13 only)
+    trade_legs: List[Any] = field(default_factory=list)  # TradeLeg objects for Greeks calculation
+    thesis_direction: Optional[str] = None  # "Bullish" or "Bearish"
+
+    # Mark-to-market tracking
+    current_value: Optional[float] = None  # Current mark-to-market value
+    current_greeks: Optional[Dict[str, float]] = None  # Current position Greeks
+    days_to_expiration: Optional[int] = None  # Updated daily
+
+    # Historical tracking
+    greeks_history: List[Dict[str, Any]] = field(default_factory=list)  # Daily Greeks snapshots
+    pnl_history: List[Dict[str, Any]] = field(default_factory=list)  # Daily P&L snapshots
+
+    def to_trade_log(self) -> Dict[str, Any]:
+        """Convert to detailed trade log format for JSON export"""
+        return {
+            "trade_id": f"{self.date.strftime('%Y%m%d')}_{self.strategy_name}",
+            "execution": {
+                "entry_date": self.date.isoformat(),
+                "closed_date": self.closed_date.isoformat() if self.closed_date else None,
+                "expiration_date": self.expiration_date,
+                "days_held": (self.closed_date - self.date).days if self.closed_date else None,
+            },
+            "market_context": self.market_data or {},
+            "trade_proposal": self.trade_proposal,
+            "position_details": {
+                "strategy_name": self.strategy_name,
+                "agent_name": self.agent_name,
+                "trade_legs": [leg.__dict__ if hasattr(leg, '__dict__') else leg for leg in self.trade_legs],
+                "thesis_direction": self.thesis_direction,
+            },
+            "pricing": {
+                "entry_price": self.entry_price,
+                "exit_price": self.exit_price,
+                "spot_at_entry": self.spot_price_at_entry,
+                "spot_at_exit": self.spot_price_at_exit,
+            },
+            "performance": {
+                "pnl": self.pnl,
+                "pnl_pct": self.pnl_pct,
+                "status": self.status,
+                "highest_pnl_pct": self.highest_pnl_pct,
+            },
+            "position_greeks": self.current_greeks or {},
+            "agent_reports": self.agent_reports or {},  # Full agent reports (Quant13 only)
+            "greeks_history": self.greeks_history,
+            "pnl_history": self.pnl_history,
+        }
+
 
 @dataclass
 class BacktestResult:
@@ -85,7 +136,7 @@ def run_backtest(
     profit_target_pct: float = 0.25,  # Take profit at 25% gain (realistic for spreads)
     stop_loss_pct: float = 0.50,  # Stop loss at 50% loss (tighter risk management)
     hold_to_expiry: bool = False,  # If True, use old behavior (close weekly)
-    slippage_pct: float = 0.06,  # 6% slippage on entry/exit (realistic for options with 21-45 DTE)
+    slippage_pct: float = 0.025,  # 2.5% slippage on entry/exit (realistic for liquid equity options)
 ) -> BacktestResult:
     """
     Run backtest for a strategy with improved position management
@@ -105,7 +156,7 @@ def run_backtest(
         profit_target_pct: Take profit when position gains this % (default: 25% for spreads)
         stop_loss_pct: Cut losses when position loses this % (default: 50%)
         hold_to_expiry: If True, use old behavior (close all positions weekly)
-        slippage_pct: Transaction cost as % of price (default: 6% for realistic options with 21-45 DTE)
+        slippage_pct: Transaction cost as % of price (default: 2.5% for liquid equity options)
 
     Returns:
         BacktestResult with performance metrics
@@ -123,7 +174,31 @@ def run_backtest(
     # Generate rebalance dates
     rebalance_dates = _generate_rebalance_dates(start_date, end_date, rebalance_frequency)
 
-    # Track portfolio state
+    # ========================================================================
+    # CAPITAL ACCOUNTING EXPLANATION
+    # ========================================================================
+    # Capital tracks AVAILABLE CASH, not total portfolio value
+    #
+    # Credit Spreads (e.g., Bull Put Spread):
+    #   - Entry: Receive premium → capital INCREASES (entry_price > 0)
+    #   - Exit: Buy back spread → capital DECREASES
+    #   - Example: Sell spread for $200 credit
+    #     * At entry: capital += $200 (we receive cash)
+    #     * At exit: capital -= exit_value (we pay to close)
+    #
+    # Debit Spreads (e.g., Bull Call Spread):
+    #   - Entry: Pay premium → capital DECREASES (entry_price < 0)
+    #   - Exit: Sell spread → capital INCREASES
+    #   - Example: Buy spread for -$300 debit
+    #     * At entry: capital -= $300 (we pay cash)
+    #     * At exit: capital += exit_value (we receive cash from sale)
+    #
+    # Position Sizing:
+    #   - position_size_pct = 10% means allocate 10% of capital per trade
+    #   - max_concurrent_positions = 3 allows 30% total allocation
+    #   - With credit spreads, capital can INCREASE above initial_capital
+    #   - This is realistic: selling premium generates cash inflow
+    # ========================================================================
     capital = initial_capital
     open_positions: List[TradeExecution] = []
     closed_trades: List[TradeExecution] = []
@@ -154,7 +229,10 @@ def run_backtest(
         capital_returned, closed = _close_expired_positions(
             open_positions, rebalance_date, ohlcv_up_to_date, risk_free_rate, slippage_pct
         )
-        capital += capital_returned  # Add returned capital, don't replace!
+        # CAPITAL FLOW: Add exit value back to capital
+        # - For long positions: exit_value > 0 (we sell and receive cash)
+        # - For short positions: exit_value < 0 (we buy back and pay cash)
+        capital += capital_returned
         closed_trades.extend(closed)
         open_positions = [p for p in open_positions if p.status == "open"]
 
@@ -218,6 +296,7 @@ def run_backtest(
             spot_price=spot_price,
             historical_volatility=hist_vol,
             risk_free_rate=risk_free_rate,
+            ticker=ticker,  # Pass ticker for skew calibration
         )
 
         # Generate trade proposal from strategy
@@ -263,10 +342,13 @@ def run_backtest(
                 )
 
                 if execution:
-                    capital += execution.entry_price  # Add entry cash flow (negative for debit, positive for credit)
+                    # CAPITAL FLOW: Add entry_price to capital
+                    # - Debit spread (entry_price < 0): Capital DECREASES (we pay premium)
+                    # - Credit spread (entry_price > 0): Capital INCREASES (we receive premium)
+                    capital += execution.entry_price
                     open_positions.append(execution)
                     logger.info(f"Opened: {execution.strategy_name}")
-                    logger.info(f"  Entry price: ${execution.entry_price:,.2f}")
+                    logger.info(f"  Entry price: ${execution.entry_price:,.2f} ({'debit' if execution.entry_price < 0 else 'credit'})")
                     logger.info(f"  Remaining capital: ${capital:,.2f}")
 
             except Exception as e:
@@ -474,7 +556,11 @@ def _monitor_positions_daily(
 
             # Mark to market
             current_value = _mark_to_market(position, current_date, ohlcv_to_date, risk_free_rate)
-            pnl = current_value - abs(position.entry_price)  # Use abs() for correct accounting
+            # FIXED: Correct P&L accounting without abs()
+            # For debit spreads (entry_price < 0): we paid, so pnl = current_value - entry_price
+            # For credit spreads (entry_price > 0): we received, so pnl = current_value - entry_price
+            # In both cases: pnl = exit_value - entry_price (standard accounting)
+            pnl = current_value - position.entry_price
             pnl_pct = pnl / abs(position.entry_price) if position.entry_price != 0 else 0
 
             # Update highest P&L for trailing stop
@@ -569,6 +655,54 @@ def _generate_rebalance_dates(
     return dates
 
 
+def _detect_trend_strength(ohlcv: pd.DataFrame) -> str:
+    """
+    Detect market trend strength for contract scaling.
+
+    Returns:
+        "strong_trend": Clear directional move (scale up to 3 contracts)
+        "weak_trend": Some direction but not clear (scale to 2 contracts)
+        "no_trend": Choppy/sideways market (use 1 contract only)
+    """
+    if ohlcv is None or len(ohlcv) < 20:
+        return "no_trend"
+
+    try:
+        close = ohlcv['close']
+
+        # Calculate indicators
+        sma_10 = close.rolling(10).mean().iloc[-1]
+        sma_20 = close.rolling(20).mean().iloc[-1]
+        current_price = close.iloc[-1]
+
+        # Calculate ADX-like trend strength (simplified)
+        # Use price position relative to SMAs and SMA alignment
+        price_above_sma10 = current_price > sma_10
+        price_above_sma20 = current_price > sma_20
+        sma10_above_sma20 = sma_10 > sma_20
+
+        # Calculate recent volatility vs directional move
+        returns_10d = (close.iloc[-1] / close.iloc[-10] - 1) * 100 if len(close) >= 10 else 0
+        returns_5d = (close.iloc[-1] / close.iloc[-5] - 1) * 100 if len(close) >= 5 else 0
+
+        # Strong trend: All aligned + significant move (>3% in 10 days)
+        all_bullish = price_above_sma10 and price_above_sma20 and sma10_above_sma20
+        all_bearish = not price_above_sma10 and not price_above_sma20 and not sma10_above_sma20
+
+        if (all_bullish or all_bearish) and abs(returns_10d) > 3:
+            return "strong_trend"
+
+        # Weak trend: Some alignment or moderate move
+        if (all_bullish or all_bearish) or abs(returns_10d) > 2:
+            return "weak_trend"
+
+        # No trend: Mixed signals, choppy market
+        return "no_trend"
+
+    except Exception:
+        return "no_trend"
+
+
 def _execute_trade(
     trade_proposal: TradeProposal,
     execution_date: datetime,
@@ -576,7 +710,8 @@ def _execute_trade(
     options_chain: List[Dict[str, Any]],
     max_capital: float,
     risk_free_rate: float,
-    slippage_pct: float = 0.02,
+    slippage_pct: float = 0.025,
+    ohlcv: pd.DataFrame = None,  # NEW: For trend detection
 ) -> Optional[TradeExecution]:
     """
     Execute a trade and return execution record
@@ -587,6 +722,11 @@ def _execute_trade(
     - When buying (paying premium), we pay MORE: premium * (1 + slippage)
     - When selling (receiving premium), we receive LESS: premium * (1 - slippage)
     - Net effect: slippage always hurts the trader
+
+    Contract scaling based on trend:
+    - Strong trend: Up to 3 contracts (capture the move)
+    - Weak trend: Up to 2 contracts (moderate exposure)
+    - No trend: 1 contract only (preserve capital in chop)
     """
     try:
         # Calculate risk metrics
@@ -608,6 +748,76 @@ def _execute_trade(
 
         logger.info(f"  Entry slippage: ${abs(net_premium_with_slippage - net_premium):.2f} ({slippage_pct:.1%})")
 
+        # =========================================================================
+        # CONTRACT SCALING: Trade multiple contracts to maximize capital utilization
+        # =========================================================================
+        # For debit trades: net_premium < 0 (we pay)
+        # For credit trades: net_premium > 0 (we receive, but max_risk is the margin required)
+
+        max_risk = risk_metrics.get("max_risk", 0)
+
+        if net_premium_with_slippage < 0:
+            # Debit trade: capital needed = premium paid per contract
+            capital_per_contract = abs(net_premium_with_slippage)
+        else:
+            # Credit trade: capital needed = max_risk (spread width - credit received)
+            # max_risk is typically spread_width * 100 - credit_received
+            if max_risk and max_risk > 0:
+                capital_per_contract = max_risk
+            else:
+                # Fallback: estimate max risk as 5x the credit received
+                capital_per_contract = abs(net_premium_with_slippage) * 5
+
+        # =========================================================================
+        # NORMALIZED POSITION SIZING: All strategies use same % of capital
+        # =========================================================================
+        # This ensures fair comparison - a $10 option and $500 spread get equal weight
+        # based on capital allocation, not arbitrary contract limits.
+
+        trend_strength = _detect_trend_strength(ohlcv)
+
+        # Target position size as % of available capital based on trend
+        # =====================================================================
+        # ULTRA CONSERVATIVE SIZING (Based on 180-day analysis)
+        # =====================================================================
+        # Problem: Avg Loss = $402 (2.5x bigger than Avg Win = $164)
+        # Solution: Reduce position sizes to limit $ impact of losers
+        # Previous: 20/15/10% → New: 15/10/8%
+        # =====================================================================
+        if trend_strength == "strong_trend":
+            target_position_pct = 0.15  # Use 15% of allocated capital in strong trends (was 20%)
+        elif trend_strength == "weak_trend":
+            target_position_pct = 0.10  # Use 10% in weak trends (was 15%)
+        else:  # no_trend
+            target_position_pct = 0.08  # Use only 8% in choppy markets (was 10%)
+
+        # Calculate target dollar amount
+        target_position_size = max_capital * target_position_pct
+
+        # Calculate contracts needed to reach target (minimum 1)
+        if capital_per_contract > 0:
+            num_contracts = max(1, int(target_position_size / capital_per_contract))
+        else:
+            num_contracts = 1
+
+        # Safety cap: Never exceed 5 contracts to limit catastrophic losses
+        num_contracts = min(num_contracts, 5)
+
+        actual_position_size = capital_per_contract * num_contracts
+        logger.info(f"  Trend: {trend_strength} → target {target_position_pct:.0%} of ${max_capital:,.0f} = ${target_position_size:,.0f}")
+        logger.info(f"  Contract scaling: {num_contracts} contracts @ ${capital_per_contract:,.0f} = ${actual_position_size:,.0f}")
+
+        # Scale the premium by number of contracts
+        net_premium_with_slippage = net_premium_with_slippage * num_contracts
+
+        # =========================================================================
+        # CRITICAL FIX: Scale leg quantities to match contract count
+        # =========================================================================
+        # Without this, mark-to-market only values 1 contract while we paid for N
+        # This caused massive losses because exit value was 1/N of entry value
+        for leg in trade_proposal.trade_legs:
+            leg.quantity = num_contracts
+
         # Check if we have enough capital (use slippage-adjusted premium)
         if net_premium_with_slippage < 0 and abs(net_premium_with_slippage) > max_capital:
             logger.warning(f"Insufficient capital for trade: need ${abs(net_premium_with_slippage):,.2f}, have ${max_capital:,.2f}")
@@ -615,6 +825,18 @@ def _execute_trade(
 
         # Find expiration date
         expiration_date = trade_proposal.trade_legs[0].expiration_date if trade_proposal.trade_legs else "unknown"
+
+        # Bug #7 FIX: Determine thesis direction from strategy name (not conviction level)
+        # Bullish strategies: Bull Call Spread, Bull Put Spread, Long Call, Cash-Secured Put
+        # Bearish strategies: Bear Call Spread, Bear Put Spread, Long Put
+        # Neutral strategies: Iron Condor, Butterfly, Straddle, Strangle
+        strategy_name_lower = trade_proposal.strategy_name.lower()
+        if any(x in strategy_name_lower for x in ['bull', 'long call', 'cash-secured put', 'covered call']):
+            thesis_dir = "Bullish"
+        elif any(x in strategy_name_lower for x in ['bear', 'long put']):
+            thesis_dir = "Bearish"
+        else:
+            thesis_dir = "Neutral"
 
         execution = TradeExecution(
             date=execution_date,
@@ -625,6 +847,10 @@ def _execute_trade(
             spot_price_at_entry=spot_price,
             expiration_date=expiration_date,
             status="open",
+            # NEW: Add trade legs for Greeks calculation
+            trade_legs=trade_proposal.trade_legs,
+            # Bug #7 FIX: Use actual direction, not conviction level
+            thesis_direction=thesis_dir,
         )
 
         return execution
@@ -639,7 +865,7 @@ def _close_positions(
     close_date: datetime,
     ohlcv: pd.DataFrame,
     risk_free_rate: float,
-    slippage_pct: float = 0.02,
+    slippage_pct: float = 0.025,
 ) -> tuple[float, List[TradeExecution]]:
     """
     Close all positions and return (capital_returned, closed_positions)
@@ -672,10 +898,15 @@ def _close_positions(
             position.spot_price_at_exit = float(ohlcv[ohlcv.index <= close_date_tz]["close"].iloc[-1])
         else:
             position.spot_price_at_exit = float(ohlcv[ohlcv.index <= close_date]["close"].iloc[-1])
-        # P&L calculation: exit_value - abs(entry_price) for correct accounting
-        # For debit spreads: entry_price is negative (we paid), so we subtract abs() to get correct P&L
-        # For credit spreads: entry_price is positive (we received), exit should be less, so P&L works correctly
-        position.pnl = exit_value_with_slippage - abs(position.entry_price)
+
+        # Bug #1 ROOT CAUSE FIX: Correct P&L calculation
+        # entry_price is signed: negative for debit (cash out), positive for credit (cash in)
+        # exit_value is what we receive when closing (positive for selling, negative for buying back)
+        #
+        # P&L = current_value + entry_price
+        # - Debit spread: paid $400 (entry=-400), now worth $500 (exit=+500) → P&L = 500 + (-400) = +$100
+        # - Credit spread: received $300 (entry=+300), now pay $100 to close (exit=-100) → P&L = -100 + 300 = +$200
+        position.pnl = exit_value_with_slippage + position.entry_price
         position.pnl_pct = (position.pnl / abs(position.entry_price)) * 100 if position.entry_price != 0 else 0
         position.status = "closed"
 
@@ -692,7 +923,7 @@ def _close_expired_positions(
     current_date: datetime,
     ohlcv: pd.DataFrame,
     risk_free_rate: float,
-    slippage_pct: float = 0.02,
+    slippage_pct: float = 0.025,
 ) -> tuple[float, List[TradeExecution]]:
     """Close positions that have expired"""
     expired = [p for p in positions if _is_expired(p, current_date)]

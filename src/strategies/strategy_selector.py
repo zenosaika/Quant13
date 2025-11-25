@@ -36,8 +36,55 @@ class SystematicStrategySelector:
         - Ranked list of strategies with scores
     """
 
-    def __init__(self):
+    def __init__(self, disable_credit_spreads: bool = True):
         self.library = STRATEGY_LIBRARY
+        self.disable_credit_spreads = disable_credit_spreads
+
+        # =========================================================================
+        # CRITICAL FIX: Filter out dangerous strategies
+        # =========================================================================
+        # 1. Credit spreads have asymmetric risk (can lose >100% of premium received)
+        # 2. Naked Call has UNLIMITED risk (caused -$29,000 loss on GOOGL)
+        # 3. Collar requires stock ownership (caused -$972 loss when missing stock)
+        # =========================================================================
+
+        # ALWAYS exclude unlimited-risk, broken, and UNDERPERFORMING strategies
+        # Based on 180-day evaluation analysis:
+        # - Long Put: -$6,903 total loss, 39% win rate, -$247 avg (WORST strategy)
+        # - Bear Put Spread: -$9,765 total loss, 50% win rate, -$174 avg
+        # - Bull Call Spread: -$4,700 total loss, 61% win rate, -$27 avg (BEST, keep it)
+        dangerous_strategies = [
+            "Naked Call",       # UNLIMITED RISK - caused -$29,000 loss
+            "Collar",           # Requires stock ownership (not modeled in backtest)
+            "Butterfly Spread", # BUG: Asymmetric strikes + P&L formula creates fake profits
+            "Iron Butterfly",   # Similar issues with complex multi-leg pricing
+            "Long Put",         # DISABLED: -$6,903 loss in 180-day eval, 39% win rate, theta bleed
+            "Bear Put Spread",  # DISABLED: -$9,765 loss in 180-day eval, buying puts in bull market
+            "Long Straddle",    # DISABLED: Theta bleed on both legs
+            "Long Strangle",    # DISABLED: Theta bleed on both legs
+        ]
+
+        self.library = {
+            k: v for k, v in self.library.items()
+            if v.name not in dangerous_strategies
+        }
+        logger.info(f"Removed {len(dangerous_strategies)} dangerous strategies (Naked Call, Collar)")
+
+        if self.disable_credit_spreads:
+            credit_strategies = [
+                "Bull Put Spread",
+                "Bear Call Spread",
+                "Iron Condor",
+                "Iron Butterfly",
+                "Short Straddle",
+                "Short Strangle",
+                "Cash-Secured Put",
+            ]
+            self.library = {
+                k: v for k, v in self.library.items()
+                if v.name not in credit_strategies
+            }
+            logger.info(f"Credit spreads DISABLED - {len(self.library)} strategies available")
 
     def select_strategy(
         self,
@@ -292,11 +339,10 @@ class SystematicStrategySelector:
         score = 0.0
 
         # ========================================================================
-        # 1. BASELINE: Credit Strategies (EXPERT REVIEW FIX - Reduced Bias)
+        # 1. BASELINE: Theta-Positive & High Win Rate Strategies
         # ========================================================================
-        # Selling options = Being the "House" (probability edge via theta decay)
-        # PREVIOUS BUG: +30 was too high, caused Iron Condor to beat directional strategies
-        # FIX: Reduced to +10 to avoid over-bias toward credit
+        # STRATEGY: Prioritize strategies with positive theta (time decay works for us)
+        # and high probability of profit. Take profits early (20%) for higher win rate.
 
         is_credit = (
             strategy.max_reward_type == "limited" and
@@ -304,10 +350,22 @@ class SystematicStrategySelector:
         )
         is_neutral = strategy.directional_bias == "neutral"
         is_long_option = strategy.max_reward_type == "unlimited"
+        is_theta_positive = strategy.theta_exposure == "positive"
+        is_naked_option = strategy.max_risk_type == "unlimited"  # Naked call/put/strangle
+
+        # THETA POSITIVE BONUS: Time decay works FOR us, not against us
+        if is_theta_positive:
+            score += 25  # Strong bonus for theta-positive strategies
+            logger.debug(f"  Theta-positive strategy: +25 points (time decay advantage)")
+
+        # NAKED OPTIONS LEVERAGE BONUS: High IV + correct direction = high leverage
+        if is_naked_option and iv_rank > 50:
+            score += 20  # Bonus for selling expensive premium
+            logger.debug(f"  Naked option in high IV: +20 points (leverage play)")
 
         if is_credit:
-            score += 10  # FIX: Reduced from 30 to 10 (less aggressive credit bias)
-            logger.debug(f"  Credit strategy baseline: +10 points (variance harvesting)")
+            score += 15  # Increased credit bias for higher win rate
+            logger.debug(f"  Credit strategy baseline: +15 points (variance harvesting)")
 
         # ========================================================================
         # 2. Volatility Regime (The Edge)
@@ -402,31 +460,86 @@ class SystematicStrategySelector:
                 logger.debug(f"  Low conviction + Directional: -25 points (no edge)")
 
         # ========================================================================
-        # 4. Penalize "Lottery Tickets" (Long OTM Options)
+        # 4. WIN RATE OPTIMIZATION: Prefer high-probability strategies
         # ========================================================================
-        # Long calls/puts without high conviction = gambling
+        # Long options have low win rate (~30-40%), short options have high win rate (~60-70%)
+        # For higher win rate, penalize low-probability plays
 
-        if is_long_option and conviction != "high":
-            score -= 50  # Kill long calls/puts unless we are 100% sure
-            logger.debug(f"  Long option without conviction: -50 points (lottery ticket)")
-        elif is_long_option and conviction == "high":
-            score += 5  # Small bonus if we're very sure
-            logger.debug(f"  Long option with high conviction: +5 points (directional bet)")
+        if is_long_option:
+            # Long options = low win rate (theta works against us)
+            if conviction != "high":
+                score -= 60  # Strong penalty - these lose most of the time
+                logger.debug(f"  Long option without conviction: -60 points (low win rate)")
+            else:
+                score -= 20  # Still penalize even with conviction (prefer credit strategies)
+                logger.debug(f"  Long option with conviction: -20 points (prefer theta-positive)")
+
+        # SINGLE-LEG CREDIT STRATEGIES: High win rate, simpler execution
+        is_single_leg_credit = (
+            strategy.leg_count == 1 and
+            strategy.theta_exposure == "positive"
+        )
+        if is_single_leg_credit:
+            score += 15  # Bonus for simple, high-probability plays
+            logger.debug(f"  Single-leg credit: +15 points (simple, high win rate)")
 
         # ========================================================================
-        # 5. Technical Confirmation (Bonus)
+        # 5. Technical Confirmation (ENHANCED - TREND FOLLOWING BIAS)
         # ========================================================================
+        # CRITICAL IMPROVEMENT: Never fight a strong technical trend
+        # If technicals say Bullish but thesis says Bearish → HEAVY PENALTY
+        # This is the key insight: Technical baseline wins because it follows trends
+
         if technical_bias:
             tech_lower = technical_bias.lower()
+            tech_is_bullish = "bull" in tech_lower
+            tech_is_bearish = "bear" in tech_lower
+            tech_is_neutral = "neutral" in tech_lower or (not tech_is_bullish and not tech_is_bearish)
 
-            if direction == "bullish" and "bull" in tech_lower:
-                score += 10
-            elif direction == "bearish" and "bear" in tech_lower:
-                score += 10
-            elif "neutral" in tech_lower and is_neutral:
-                score += 15  # Extra bonus for neutral confirmation
-                logger.debug(f"  Technical confirms neutral: +15 points")
+            # TREND ALIGNMENT BONUS
+            if direction == "bullish" and tech_is_bullish:
+                score += 25  # Strong bonus for trend alignment (was +10)
+                logger.debug(f"  Technical CONFIRMS bullish: +25 points (TREND ALIGNED)")
+            elif direction == "bearish" and tech_is_bearish:
+                score += 25  # Strong bonus for trend alignment (was +10)
+                logger.debug(f"  Technical CONFIRMS bearish: +25 points (TREND ALIGNED)")
+            elif tech_is_neutral and is_neutral:
+                score += 20  # Bonus for neutral confirmation
+                logger.debug(f"  Technical confirms neutral: +20 points")
+
+            # COUNTER-TREND PENALTY (CRITICAL - Never fight the trend!)
+            # Fighting the trend is the #1 reason Quant13 underperforms
+            elif direction == "bullish" and tech_is_bearish:
+                score -= 80  # VERY heavy penalty for fighting bearish trend
+                logger.warning(f"  COUNTER-TREND: Bullish thesis vs Bearish technicals: -80 points (AVOID)")
+            elif direction == "bearish" and tech_is_bullish:
+                score -= 80  # VERY heavy penalty for fighting bullish trend
+                logger.warning(f"  COUNTER-TREND: Bearish thesis vs Bullish technicals: -80 points (AVOID)")
+
+            # Neutral thesis with strong technical trend - suggest directional instead
+            elif is_neutral and (tech_is_bullish or tech_is_bearish):
+                score -= 15  # Mild penalty for missing trend opportunity
+                logger.debug(f"  Neutral strategy in trending market: -15 points")
             else:
-                score += 5  # Partial credit
+                score += 5  # Partial credit for any technical data
 
-        return min(score, 100.0)  # Cap at 100
+            # ========================================================================
+            # CRITICAL FIX: Penalize STRATEGY that fights the technical trend
+            # ========================================================================
+            # Even if thesis is neutral/aligned, if the STRATEGY goes against technicals, KILL IT
+            # This is the root cause of QQQ Bear Call Spread loss:
+            # - Thesis was Bullish (correct)
+            # - Technicals were Bullish (correct)
+            # - But Bear Call Spread (bearish strategy) was still selected due to credit bonuses
+            strategy_fights_tech = (
+                (tech_is_bullish and strategy.directional_bias == "bearish") or
+                (tech_is_bearish and strategy.directional_bias == "bullish")
+            )
+            if strategy_fights_tech:
+                score -= 100  # KILL strategies that fight the technical trend
+                logger.warning(
+                    f"  STRATEGY vs TECHNICALS: {strategy.directional_bias.upper()} strategy "
+                    f"vs {tech_lower.upper()} technicals = -100 points (REJECTED)"
+                )
+
+        return min(max(score, -50), 100.0)  # Floor at -50, cap at 100

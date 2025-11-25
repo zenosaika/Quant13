@@ -23,6 +23,40 @@ from src.pricing.black_scholes import black_scholes_price, calculate_greeks
 logger = logging.getLogger(__name__)
 
 
+def _get_skew_factor_for_ticker(ticker: str = None) -> float:
+    """
+    FIXED: Determine appropriate volatility skew based on ticker type
+
+    Different asset classes have different skew characteristics:
+    - Index ETFs (SPY, SPX, QQQ, IWM, DIA): 15-20% skew (high put demand)
+    - Individual stocks: 8-12% skew (moderate skew)
+    - Volatility products (VXX, UVXY): 25%+ skew (extreme)
+
+    Args:
+        ticker: Stock ticker symbol (optional)
+
+    Returns:
+        Appropriate skew factor
+    """
+    if ticker is None:
+        return 0.10  # Default: individual stock
+
+    ticker_upper = ticker.upper()
+
+    # Index ETFs and major indices (higher skew)
+    index_tickers = {'SPY', 'SPX', 'QQQ', 'IWM', 'DIA', 'MDY', 'EEM', 'EFA'}
+    if ticker_upper in index_tickers:
+        return 0.18  # 18% skew for indices
+
+    # Volatility products (extreme skew)
+    vol_tickers = {'VXX', 'UVXY', 'VIXY', 'SVXY'}
+    if ticker_upper in vol_tickers:
+        return 0.30  # 30% skew for vol products
+
+    # Default: individual stock (moderate skew)
+    return 0.10  # 10% skew for stocks
+
+
 def _calculate_skewed_volatility(
     strike: float,
     spot_price: float,
@@ -38,11 +72,15 @@ def _calculate_skewed_volatility(
     - ATM options have baseline IV
     - OTM calls (strike > spot) may have slightly elevated IV
 
+    Skew calibration:
+    - Individual stocks: 5-10% skew per 10% moneyness
+    - Index/ETF (SPX, SPY, QQQ): 15-20% skew per 10% moneyness
+
     Args:
         strike: Strike price
         spot_price: Current spot price
         base_volatility: Base/ATM implied volatility
-        skew_factor: Skew strength parameter
+        skew_factor: Skew strength parameter (0.10 for stocks, 0.15-0.20 for indices)
         option_type: "call" or "put"
 
     Returns:
@@ -80,7 +118,8 @@ def generate_historical_options_chain(
     num_strikes: int = 20,
     num_expirations: int = 2,
     apply_skew: bool = True,
-    skew_factor: float = 0.15,
+    skew_factor: float = None,
+    ticker: str = None,
 ) -> List[Dict[str, Any]]:
     """
     Generate synthetic options chain for a historical date using Black-Scholes
@@ -93,11 +132,16 @@ def generate_historical_options_chain(
         num_strikes: Number of strikes to generate (centered around ATM)
         num_expirations: Number of expiration dates to generate
         apply_skew: If True, apply volatility skew (OTM puts more expensive)
-        skew_factor: Controls strength of skew effect (0.15 = 15% skew per 10% moneyness)
+        skew_factor: Controls strength of skew effect (auto-detected from ticker if None)
+        ticker: Stock ticker (used for skew calibration)
 
     Returns:
         List of expiration groups similar to fetch_options_chain format
     """
+    # FIXED: Auto-detect skew factor based on ticker type
+    if skew_factor is None:
+        skew_factor = _get_skew_factor_for_ticker(ticker)
+        logger.info(f"Auto-detected skew factor: {skew_factor:.2f} for ticker={ticker}")
     options_chain = []
 
     # Generate expiration dates (next few Fridays)
@@ -164,9 +208,36 @@ def generate_historical_options_chain(
                 option_type="put"
             )
 
-            # Simulate bid-ask spread (1-2% of price)
-            call_spread = max(call_price * 0.015, 0.05)
-            put_spread = max(put_price * 0.015, 0.05)
+            # FIXED: Moneyness-dependent bid-ask spread (more realistic)
+            # Calculate moneyness for each option
+            call_moneyness = abs((strike - spot_price) / spot_price)  # 0 = ATM, >0 = OTM
+            put_moneyness = abs((spot_price - strike) / spot_price)
+
+            # Spread increases with moneyness (OTM options have wider spreads)
+            # ATM (moneyness ~0%): 1.5% spread
+            # 5% OTM: 3% spread
+            # 10% OTM: 5% spread
+            # 20%+ OTM: 10%+ spread
+            call_spread_pct = 0.015 + (call_moneyness * 0.30)  # Scales from 1.5% to 10%+
+            put_spread_pct = 0.015 + (put_moneyness * 0.30)
+
+            # Apply spread with minimum of $0.05
+            call_spread = max(call_price * call_spread_pct, 0.05)
+            put_spread = max(put_price * put_spread_pct, 0.05)
+
+            # Generate synthetic liquidity based on moneyness
+            # ATM options have highest liquidity, decreases as we move OTM/ITM
+            moneyness = abs(strike - spot_price) / spot_price
+
+            if moneyness <= 0.05:  # Within 5% of ATM
+                open_interest = 5000
+                volume = 1000
+            elif moneyness <= 0.10:  # 5-10% from ATM
+                open_interest = 1000
+                volume = 200
+            else:  # >10% from ATM
+                open_interest = 500
+                volume = 100
 
             # Create call entry
             call_symbol = f"SYNTHETIC_C_{exp_date.strftime('%y%m%d')}_{int(strike*1000):08d}"
@@ -178,6 +249,8 @@ def generate_historical_options_chain(
                 "ask": call_price + call_spread/2,
                 "impliedVolatility": call_vol,  # Store skewed IV
                 "computed_greeks": call_greeks,
+                "openInterest": open_interest,  # Synthetic liquidity
+                "volume": volume,  # Synthetic volume
             })
 
             # Create put entry
@@ -190,6 +263,8 @@ def generate_historical_options_chain(
                 "ask": put_price + put_spread/2,
                 "impliedVolatility": put_vol,  # Store skewed IV
                 "computed_greeks": put_greeks,
+                "openInterest": open_interest,  # Synthetic liquidity
+                "volume": volume,  # Synthetic volume
             })
 
         # Convert to DataFrames

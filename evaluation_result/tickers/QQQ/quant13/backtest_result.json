@@ -1,0 +1,17 @@
+{
+  "ticker": "QQQ",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9340.425971839595,
+  "total_return": -659.5740281604049,
+  "total_return_pct": -6.595740281604049,
+  "num_trades": 13,
+  "num_winners": 8,
+  "num_losers": 5,
+  "win_rate": 0.6153846153846154,
+  "average_pnl": -50.73646370464656,
+  "max_drawdown": -0.0907344209817762,
+  "sharpe_ratio": -1.1288308872276647
+}

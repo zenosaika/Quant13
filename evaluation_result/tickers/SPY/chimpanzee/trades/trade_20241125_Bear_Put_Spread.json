@@ -1,0 +1,374 @@
+{
+  "trade_id": "20241125_Bear Put Spread",
+  "execution": {
+    "entry_date": "2024-11-25T00:00:00",
+    "closed_date": "2024-12-01T00:00:00",
+    "expiration_date": "2024-12-27",
+    "days_held": 6
+  },
+  "market_context": {
+    "iv_rank": 42.35,
+    "atm_iv": 0.1229,
+    "historical_vol": 0.1228,
+    "regime": "Normal Ranging",
+    "technical_sentiment": "Bullish"
+  },
+  "trade_proposal": {
+    "agent": "ChimpanzeeBaseline",
+    "strategy_name": "Bear Put Spread",
+    "action": "OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_P_241227_00615000",
+        "type": "PUT",
+        "action": "BUY",
+        "strike_price": 615.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": -0.8399039570863852,
+          "gamma": 0.011427108004693706,
+          "theta": -0.0098392570501763,
+          "vega": 0.425474655533543
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_P_241220_00575000",
+        "type": "PUT",
+        "action": "SELL",
+        "strike_price": 575.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": -0.17401139927440523,
+          "gamma": 0.013476657260118116,
+          "theta": -0.08358476948951118,
+          "vega": 0.39683855159167875
+        }
+      }
+    ],
+    "notes": "Random Bearish selection",
+    "conviction_level": "Low",
+    "generation_status": "generated",
+    "max_risk": null,
+    "max_reward": null,
+    "net_premium": null
+  },
+  "position_details": {
+    "strategy_name": "Bear Put Spread",
+    "agent_name": "ChimpanzeeBaseline",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_P_241227_00615000",
+        "type": "PUT",
+        "action": "BUY",
+        "strike_price": 615.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": -0.0018656926910110005,
+          "gamma": 0.00029406390982448914,
+          "theta": -0.002144476218867683,
+          "vega": 0.010623491759638441,
+          "rho": -0.0008966075169450602
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_P_241220_00575000",
+        "type": "PUT",
+        "action": "SELL",
+        "strike_price": 575.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 1,
+        "key_greeks_at_selection": {
+          "delta": -1.3426563194585128e-09,
+          "gamma": 4.740705560249525e-10,
+          "theta": -3.6116486735987226e-09,
+          "vega": 1.251551697882214e-08,
+          "rho": -4.693258444066744e-10
+        }
+      }
+    ],
+    "thesis_direction": "Bearish"
+  },
+  "pricing": {
+    "entry_price": -2246.106252337281,
+    "exit_price": 1.0822500000000002,
+    "spot_at_entry": 590.3528442382812,
+    "spot_at_exit": 595.3125
+  },
+  "performance": {
+    "pnl": -2245.024002337281,
+    "pnl_pct": -99.95181661602723,
+    "status": "closed",
+    "highest_pnl_pct": 0.0
+  },
+  "position_greeks": {
+    "net_delta": -0.0019,
+    "net_gamma": 0.0003,
+    "net_theta": -0.0021,
+    "net_vega": 0.0106,
+    "net_rho": -0.0009,
+    "delta_dollars": -124.76,
+    "theta_daily_dollars": -0.21,
+    "vega_dollars": 1.06
+  },
+  "agent_reports": {},
+  "greeks_history": [
+    {
+      "date": "2024-11-25T00:00:00",
+      "spot_price": 590.3528442382812,
+      "net_delta": -0.6279,
+      "net_gamma": -0.0019,
+      "net_theta": 0.0698,
+      "net_vega": 0.0405,
+      "net_rho": -0.3663,
+      "delta_dollars": -37070.47,
+      "theta_daily_dollars": 6.98,
+      "vega_dollars": 4.05
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 593.4353637695312,
+      "net_delta": -0.653,
+      "net_gamma": 0.0014,
+      "net_theta": 0.045,
+      "net_vega": 0.1516,
+      "net_rho": -0.3625,
+      "delta_dollars": -38753.99,
+      "theta_daily_dollars": 4.5,
+      "vega_dollars": 15.16
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 593.4353637695312,
+      "net_delta": -0.653,
+      "net_gamma": 0.0014,
+      "net_theta": 0.045,
+      "net_vega": 0.1516,
+      "net_rho": -0.3625,
+      "delta_dollars": -38753.99,
+      "theta_daily_dollars": 4.5,
+      "vega_dollars": 15.16
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "spot_price": 591.6371459960938,
+      "net_delta": -0.6642,
+      "net_gamma": -0.0007,
+      "net_theta": 0.0625,
+      "net_vega": 0.0824,
+      "net_rho": -0.3587,
+      "delta_dollars": -39293.82,
+      "theta_daily_dollars": 6.25,
+      "vega_dollars": 8.24
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "spot_price": 591.6371459960938,
+      "net_delta": -0.6642,
+      "net_gamma": -0.0007,
+      "net_theta": 0.0625,
+      "net_vega": 0.0824,
+      "net_rho": -0.3587,
+      "delta_dollars": -39293.82,
+      "theta_daily_dollars": 6.25,
+      "vega_dollars": 8.24
+    },
+    {
+      "date": "2024-11-28T00:00:00",
+      "spot_price": 591.6371459960938,
+      "net_delta": -0.6735,
+      "net_gamma": -0.0008,
+      "net_theta": 0.0639,
+      "net_vega": 0.0809,
+      "net_rho": -0.3514,
+      "delta_dollars": -39849.29,
+      "theta_daily_dollars": 6.39,
+      "vega_dollars": 8.09
+    },
+    {
+      "date": "2024-11-28T00:00:00",
+      "spot_price": 591.6371459960938,
+      "net_delta": -0.6735,
+      "net_gamma": -0.0008,
+      "net_theta": 0.0639,
+      "net_vega": 0.0809,
+      "net_rho": -0.3514,
+      "delta_dollars": -39849.29,
+      "theta_daily_dollars": 6.39,
+      "vega_dollars": 8.09
+    },
+    {
+      "date": "2024-11-29T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7226,
+      "net_gamma": 0.0047,
+      "net_theta": 0.0307,
+      "net_vega": 0.2232,
+      "net_rho": -0.3543,
+      "delta_dollars": -43018.21,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 22.32
+    },
+    {
+      "date": "2024-11-29T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7226,
+      "net_gamma": 0.0047,
+      "net_theta": 0.0307,
+      "net_vega": 0.2232,
+      "net_rho": -0.3543,
+      "delta_dollars": -43018.21,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 22.32
+    },
+    {
+      "date": "2024-11-30T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7326,
+      "net_gamma": 0.0048,
+      "net_theta": 0.0307,
+      "net_vega": 0.2207,
+      "net_rho": -0.3459,
+      "delta_dollars": -43612.12,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 22.07
+    },
+    {
+      "date": "2024-11-30T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7326,
+      "net_gamma": 0.0048,
+      "net_theta": 0.0307,
+      "net_vega": 0.2207,
+      "net_rho": -0.3459,
+      "delta_dollars": -43612.12,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 22.07
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7429,
+      "net_gamma": 0.005,
+      "net_theta": 0.0307,
+      "net_vega": 0.2182,
+      "net_rho": -0.3374,
+      "delta_dollars": -44227.37,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 21.82
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "spot_price": 595.3125,
+      "net_delta": -0.7429,
+      "net_gamma": 0.005,
+      "net_theta": 0.0307,
+      "net_vega": 0.2182,
+      "net_rho": -0.3374,
+      "delta_dollars": -44227.37,
+      "theta_daily_dollars": 3.07,
+      "vega_dollars": 21.82
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "spot_price": 668.72998046875,
+      "net_delta": -0.0019,
+      "net_gamma": 0.0003,
+      "net_theta": -0.0021,
+      "net_vega": 0.0106,
+      "net_rho": -0.0009,
+      "delta_dollars": -124.76,
+      "theta_daily_dollars": -0.21,
+      "vega_dollars": 1.06
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-11-25T00:00:00",
+      "current_value": 2201.19,
+      "pnl": -44.916252337281094,
+      "pnl_pct": -1.999738538216595
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 2005.29,
+      "pnl": -240.81625233728118,
+      "pnl_pct": -10.721498686301665
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 2005.29,
+      "pnl": -240.81625233728118,
+      "pnl_pct": -10.721498686301665
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "current_value": 2128.68,
+      "pnl": -117.42625233728131,
+      "pnl_pct": -5.2279918732735124
+    },
+    {
+      "date": "2024-11-27T00:00:00",
+      "current_value": 2128.68,
+      "pnl": -117.42625233728131,
+      "pnl_pct": -5.2279918732735124
+    },
+    {
+      "date": "2024-11-28T00:00:00",
+      "current_value": 2135.0,
+      "pnl": -111.10625233728115,
+      "pnl_pct": -4.9466160481795916
+    },
+    {
+      "date": "2024-11-28T00:00:00",
+      "current_value": 2135.0,
+      "pnl": -111.10625233728115,
+      "pnl_pct": -4.9466160481795916
+    },
+    {
+      "date": "2024-11-29T00:00:00",
+      "current_value": 1864.86,
+      "pnl": -381.24625233728125,
+      "pnl_pct": -16.973651711291897
+    },
+    {
+      "date": "2024-11-29T00:00:00",
+      "current_value": 1864.86,
+      "pnl": -381.24625233728125,
+      "pnl_pct": -16.973651711291897
+    },
+    {
+      "date": "2024-11-30T00:00:00",
+      "current_value": 1867.94,
+      "pnl": -378.1662523372811,
+      "pnl_pct": -16.83652551804992
+    },
+    {
+      "date": "2024-11-30T00:00:00",
+      "current_value": 1867.94,
+      "pnl": -378.1662523372811,
+      "pnl_pct": -16.83652551804992
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "current_value": 1871.01,
+      "pnl": -375.09625233728116,
+      "pnl_pct": -16.699844539721077
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "current_value": 1871.01,
+      "pnl": -375.09625233728116,
+      "pnl_pct": -16.699844539721077
+    },
+    {
+      "date": "2024-12-01T00:00:00",
+      "current_value": 1.11,
+      "pnl": -2244.996252337281,
+      "pnl_pct": -99.95058114464331
+    }
+  ]
+}

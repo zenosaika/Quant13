@@ -1,0 +1,17 @@
+{
+  "ticker": "GOOGL",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10218.55755414872,
+  "total_return": 218.55755414871965,
+  "total_return_pct": 2.1855755414871965,
+  "num_trades": 6,
+  "num_winners": 4,
+  "num_losers": 2,
+  "win_rate": 0.6666666666666666,
+  "average_pnl": 36.42625902478653,
+  "max_drawdown": -0.017699059182582643,
+  "sharpe_ratio": 1.2789749553582257
+}

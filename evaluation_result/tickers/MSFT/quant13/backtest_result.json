@@ -1,0 +1,17 @@
+{
+  "ticker": "MSFT",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10854.32921825852,
+  "total_return": 854.3292182585192,
+  "total_return_pct": 8.543292182585192,
+  "num_trades": 13,
+  "num_winners": 8,
+  "num_losers": 5,
+  "win_rate": 0.6153846153846154,
+  "average_pnl": 65.7176321737322,
+  "max_drawdown": -0.061673232911441875,
+  "sharpe_ratio": 1.4345500568208827
+}

@@ -1,0 +1,17 @@
+{
+  "ticker": "JPM",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10619.688494010934,
+  "total_return": 619.6884940109339,
+  "total_return_pct": 6.1968849401093395,
+  "num_trades": 13,
+  "num_winners": 7,
+  "num_losers": 6,
+  "win_rate": 0.5384615384615384,
+  "average_pnl": 47.66834569314868,
+  "max_drawdown": -0.15586140795653664,
+  "sharpe_ratio": 0.5792888046513053
+}

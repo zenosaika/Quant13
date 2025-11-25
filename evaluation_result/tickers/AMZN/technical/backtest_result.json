@@ -1,0 +1,17 @@
+{
+  "ticker": "AMZN",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10308.924423193037,
+  "total_return": 308.924423193037,
+  "total_return_pct": 3.08924423193037,
+  "num_trades": 8,
+  "num_winners": 5,
+  "num_losers": 3,
+  "win_rate": 0.625,
+  "average_pnl": 38.61555289912964,
+  "max_drawdown": -0.033496521468670735,
+  "sharpe_ratio": 1.2204536460170277
+}

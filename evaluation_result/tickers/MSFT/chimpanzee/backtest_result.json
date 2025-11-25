@@ -1,0 +1,17 @@
+{
+  "ticker": "MSFT",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 3990.49202427983,
+  "total_return": -6009.50797572017,
+  "total_return_pct": -60.095079757201695,
+  "num_trades": 13,
+  "num_winners": 4,
+  "num_losers": 9,
+  "win_rate": 0.3076923076923077,
+  "average_pnl": -462.2698442861669,
+  "max_drawdown": -0.6073696797741961,
+  "sharpe_ratio": -3.020949052735986
+}

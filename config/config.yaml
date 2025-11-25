@@ -146,6 +146,13 @@ agents:
       Always respond with valid JSON containing: execute_trade, final_sizing, manager_rationale, and final_recommendation.
     temperature: 0.1
 
+  position_monitor:
+    profit_target_pct: 0.50  # 50% of max profit
+    stop_loss_credit_pct: 1.00  # 100% of credit received
+    stop_loss_debit_pct: 0.50  # 50% of debit paid
+    gamma_risk_threshold: 10.0  # Close if Gamma > 10 and <7 DTE
+    min_dte_close: 7  # Close all positions at 7 DTE
+
 validation:
   # Phase 1 & 2: Thesis-Strategy Alignment validation
   enable_thesis_gate: true  # Validate thesis-strategy alignment (prevents RBLX-style failures)

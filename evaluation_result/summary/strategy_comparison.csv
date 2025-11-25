@@ -1,0 +1,4 @@
+strategy_name,total_return_pct,sharpe_ratio,win_rate,max_drawdown,num_trades,num_winners,num_losers,avg_trades_per_ticker
+quant13,-1.5,-0.25,0.63,-0.1,130,82,48,13.0
+chimpanzee,-21.65,-1.28,0.47,-0.29,125,60,65,12.0
+technical,-5.47,-1.39,0.51,-0.09,74,37,37,7.0

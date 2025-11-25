@@ -1,0 +1,17 @@
+{
+  "ticker": "TSLA",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10695.031694247837,
+  "total_return": 695.0316942478366,
+  "total_return_pct": 6.950316942478367,
+  "num_trades": 4,
+  "num_winners": 3,
+  "num_losers": 1,
+  "win_rate": 0.75,
+  "average_pnl": 173.75792356195907,
+  "max_drawdown": -0.02998531957259757,
+  "sharpe_ratio": 1.3680877387348707
+}

@@ -1,0 +1,292 @@
+{
+  "trade_id": "20241118_Bull Call Spread",
+  "execution": {
+    "entry_date": "2024-11-18T00:00:00",
+    "closed_date": "2024-11-22T00:00:00",
+    "expiration_date": "2024-12-20",
+    "days_held": 4
+  },
+  "market_context": {
+    "iv_rank": 92.84,
+    "atm_iv": 0.3964,
+    "historical_vol": 0.3963,
+    "regime": "Normal Uptrend",
+    "technical_sentiment": "Bullish"
+  },
+  "trade_proposal": {
+    "agent": "SystematicTraderAgent",
+    "strategy_name": "Bull Call Spread",
+    "action": "BUY_TO_OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00245000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 245.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 2,
+        "key_greeks_at_selection": {
+          "delta": 0.4675910631807771,
+          "gamma": 0.014113375340078156,
+          "theta": -0.1891152313248756,
+          "vega": 0.28250365002935557,
+          "impliedVolatility": null
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00260000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 260.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 2,
+        "key_greeks_at_selection": {
+          "delta": 0.27890147537914267,
+          "gamma": 0.011903068649164917,
+          "theta": -0.15671937523510412,
+          "vega": 0.23870708238086874,
+          "impliedVolatility": null
+        }
+      }
+    ],
+    "notes": "## Trade Rationale: Bull Call Spread on [Underlying Asset]\n\nGood morning. Based on our medium-conviction bullish thesis for the underlying asset, currently trading near $239.95, we are recommending a **Bull Call Spread** to capitalize on potential upside while managing the significant volatility environment.\n\n### Strategy Alignment and Structure\n\nThe Bull Call Spread is the ideal strategy for a defined-risk bullish outlook, especially given the current **IV Rank of 92.8**. High implied volatility makes outright long call purchases expensive. By simultaneously selling a higher-strike call, we partially finance the purchase of the lower-strike call, significantly reducing our net debit (cost) and lowering the breakeven point compared to a naked long call.\n\nThe trade structure is as follows: we are **Buying the 245 Call** and **Selling the 260 Call**. This creates a $15 wide spread. Our maximum profit is capped at the width of the strikes minus the net debit paid, realized if the stock closes at or above $260 at expiration. Our maximum risk is limited strictly to the net debit paid upfront. This structure allows us to participate in the expected move up to $260 while maintaining a fixed, known risk profile.\n\n### Risk Management and Volatility Considerations\n\nThe primary risk in this strategy is the stock failing to move above the long strike ($245) or moving sideways, resulting in the loss of the premium paid. While the strategy aligns perfectly with our bullish directional thesis, we must acknowledge the extremely high implied volatility environment. Although the spread mitigates the cost, the high IV means that if volatility collapses (a sharp drop in IV), the value of our spread could erode faster than expected, even if the stock moves slightly higher.\n\nFurthermore, we note that realized volatility is accelerating, which supports the potential for a strong directional move. We will monitor the stock's movement relative to the $245 strike. If the stock stalls below this level, we may consider an early exit to salvage remaining premium, as time decay (Theta) will accelerate against the spread as expiration approaches. This is a defined-risk play designed to capture a move into our target range of $245 to $260.\n\n```json\n{\n  \"strategy\": \"Bull Call Spread\",\n  \"legs\": [\n    {\n      \"action\": \"BUY\",\n      \"type\": \"CALL\",\n      \"strike\": 245.0,\n      \"delta\": 0.4675910631807771\n    },\n    {\n      \"action\": \"SELL\",\n      \"type\": \"CALL\",\n      \"strike\": 260.0,\n      \"delta\": 0.27890147537914267\n    }\n  ]\n}\n```",
+    "conviction_level": "Medium",
+    "generation_status": "generated",
+    "max_risk": 485.8841190704985,
+    "max_reward": 1014.1158809295015,
+    "net_premium": -485.8841190704985
+  },
+  "position_details": {
+    "strategy_name": "Bull Call Spread",
+    "agent_name": "SystematicTraderAgent",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00245000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 245.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 2,
+        "key_greeks_at_selection": {
+          "delta": 0.5151647387856143,
+          "gamma": 0.013527196438187821,
+          "theta": -0.2254056764803161,
+          "vega": 0.26874779703498514,
+          "rho": 0.08741615646464775
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241220_00260000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 260.0,
+        "expiration_date": "2024-12-20",
+        "quantity": 2,
+        "key_greeks_at_selection": {
+          "delta": 0.32536189566458984,
+          "gamma": 0.012218248538047516,
+          "theta": -0.1995371999492963,
+          "vega": 0.2427426402233936,
+          "rho": 0.056236614879988656
+        }
+      }
+    ],
+    "thesis_direction": "Bullish"
+  },
+  "pricing": {
+    "entry_price": -996.0624440945219,
+    "exit_price": 1082.7959999999998,
+    "spot_at_entry": 239.95050048828125,
+    "spot_at_exit": 243.3975372314453
+  },
+  "performance": {
+    "pnl": 86.73355590547794,
+    "pnl_pct": 8.707642419379011,
+    "status": "closed",
+    "highest_pnl_pct": 11.49501786602977
+  },
+  "position_greeks": {
+    "net_delta": 0.3796,
+    "net_gamma": 0.0026,
+    "net_theta": -0.0517,
+    "net_vega": 0.052,
+    "net_rho": 0.0624,
+    "delta_dollars": 9239.51,
+    "theta_daily_dollars": -5.17,
+    "vega_dollars": 5.2
+  },
+  "agent_reports": {
+    "volatility": "agent='VolatilityModelingAgent' ticker='JPM' iv_rank=87.30404177176695 volatility_forecast='Realized volatility is accelerating above its 1-month average.' skew_analysis='Near-the-money skew is balanced between calls and puts.' term_structure='Flat term structure between near and far expirations.'",
+    "sentiment": "agent='SyntheticMeanReversion' ticker='JPM' overall_sentiment_score=0.0 overall_summary='RSI extreme (74.3). Avoid directional bias. Default to neutral strategies.' articles=[ArticleSentiment(title='JPM RSI extreme - neutral strategy', publisher='Mean Reversion Logic', link=None, published_at=None, summary=None, sentiment_score=0.0, rationale=\"RSI 74.3 overbought. Don't chase extremes.\")]",
+    "technical": "agent='TechnicalAnalyst' ticker='JPM' indicators=TechnicalIndicators(latest_close=245.10145568847656, price_date='2024-11-25T00:00:00-05:00', SMA_50={'value': 218.99038970947265, 'slope': 0.8063204650878694, 'price_relationship': 'above'}, SMA_200={'value': None, 'slope': None, 'price_relationship': None}, EMA_20={'value': 233.30081584267464, 'price_relationship': 'above', 'slope': 1.0082637900868598}, Bollinger_Bands={'lower': 212.05407550084107, 'middle': 231.77114562988282, 'upper': 251.48821575892458, 'width': 39.43414025808352, 'price_position': 0.8380398297351288}, MACD_Signal={'macd': 6.8455209623925555, 'signal': 6.308167722080119, 'histogram': 0.5373532403124361, 'crossover': 'bullish'}, RSI={'value': 74.31608626978607, 'regime': 'overbought'}, Supertrend_Signal={'trend': 'bullish', 'level': 215.7410329290281}, OBV_Trend={'value': 277543300.0, 'trend': 'rising'}, recent_candlestick_patterns=[{'date': '2024-11-22T00:00:00-05:00', 'pattern': 'Marubozu', 'direction': 'bullish'}, {'date': '2024-11-15T00:00:00-05:00', 'pattern': 'Bullish Engulfing', 'direction': 'bullish'}, {'date': '2024-11-20T00:00:00-05:00', 'pattern': 'Bearish Engulfing', 'direction': 'bearish'}], derived_signals=[], key_levels={'recent_high': 249.03812485418172, 'recent_low': 214.6265675335852}) llm_report={'technical_bias': 'neutral', 'summary': \"## Technical Analysis Report\\n\\n**Ticker:** JPM\\n**Date:** 2024-11-25\\n\\n### 1. Primary Trend Identification\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **SMA 50** | 218.99 | Price is significantly **above** the 50-day SMA. |\\n| **SMA 200** | N/A | Insufficient data for 200-day SMA trend confirmation. |\\n| **Current Price** | 245.10 | |\\n\\n**Trend Assessment:** The primary trend is strongly **Bullish**. The price is trading well above the rising 50-day SMA, indicating robust intermediate-term strength.\\n\\n### 2. Momentum Assessment\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **RSI** | 74.32 | **Overbought** regime (above 70), suggesting potential for a short-term pullback or consolidation. |\\n| **MACD Histogram** | 0.54 | Positive and increasing, indicating strengthening bullish momentum. |\\n| **MACD Crossover** | Bullish | MACD line is above the signal line, confirming recent bullish momentum. |\\n\\n**Momentum Summary:** Momentum is very strong and bullish, confirmed by the MACD crossover and positive histogram. However, the RSI is deep in the overbought territory, signaling that the current upward move may be stretched and vulnerable to profit-taking.\\n\\n### 3. Volatility and Key Levels\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **Bollinger Band Position** | 0.84 | Price is near the upper band (251.49), indicating high volatility and proximity to a short-term resistance extreme. |\\n| **Supertrend Signal** | Bullish (215.74) | Provides a strong dynamic support level. |\\n| **EMA 20** | 233.30 | Acts as immediate dynamic support. |\\n\\n**Volatility & Levels Summary:** Volatility is high, with the price pushing the upper Bollinger Band. This suggests the move is aggressive.\\n\\n### 4. Synthesis of Short-Term Signals\\n\\n| Indicator | Signal | Interpretation |\\n| :--- | :--- | :--- |\\n| **OBV Trend** | Rising | Confirms the price action; volume is supporting the uptrend. |\\n| **Candlestick Patterns** | Mixed/Bullish | Recent patterns show strong bullish conviction (Marubozu, Bullish Engulfing) but also a recent Bearish Engulfing, suggesting a battle between buyers and sellers at current highs. |\\n| **Supertrend** | Bullish | Confirms the short-term uptrend is intact. |\\n\\n**Short-Term Bias:** The short-term bias is **Bullish but Cautionary**. Strong volume (OBV) and trend indicators (Supertrend, EMA 20) support continued upward movement. However, the extreme RSI and the price's proximity to the upper Bollinger Band suggest that the rate of ascent may slow down, or a minor correction/consolidation phase is likely before the next leg up.\\n\\n---\\n\\n## Technical Outlook Summary\\n\\n| Metric | Assessment |\\n| :--- | :--- |\\n| **Primary Trend** | Strongly Bullish |\\n| **Momentum** | Strong, but Overbought (RSI > 70) |\\n| **Volatility** | High (Price near Upper BB) |\\n| **Volume Confirmation** | Confirmed (Rising OBV) |\\n| **Technical Bias** | **Bullish** |\\n\\n**Key Price Levels to Watch:**\\n\\n| Level Type | Price (USD) | Significance |\\n| :--- | :--- | :--- |\\n| **Immediate Resistance** | 251.49 | Upper Bollinger Band (Potential short-term ceiling). |\\n| **Immediate Support** | 233.30 | 20-day EMA (First line of dynamic support). |\\n| **Critical Support** | 218.99 | 50-day SMA (Intermediate-term trend defining support). |\\n| **Trend Confirmation** | 215.74 | Supertrend Level (Break below this would signal a trend reversal). |\\n\\n**Conclusion:** JPM is in a powerful uptrend, supported by strong momentum and volume. While the stock is currently overbought (RSI 74), the MACD and Supertrend confirm the bullish control. Traders should watch the **$251.49** level for potential resistance and use the **$233.30** (EMA 20) level as the primary short-term support for managing risk. The overall outlook remains bullish as long as the price holds above the 50-day SMA.\"} llm_raw=\"## Technical Analysis Report\\n\\n**Ticker:** JPM\\n**Date:** 2024-11-25\\n\\n### 1. Primary Trend Identification\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **SMA 50** | 218.99 | Price is significantly **above** the 50-day SMA. |\\n| **SMA 200** | N/A | Insufficient data for 200-day SMA trend confirmation. |\\n| **Current Price** | 245.10 | |\\n\\n**Trend Assessment:** The primary trend is strongly **Bullish**. The price is trading well above the rising 50-day SMA, indicating robust intermediate-term strength.\\n\\n### 2. Momentum Assessment\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **RSI** | 74.32 | **Overbought** regime (above 70), suggesting potential for a short-term pullback or consolidation. |\\n| **MACD Histogram** | 0.54 | Positive and increasing, indicating strengthening bullish momentum. |\\n| **MACD Crossover** | Bullish | MACD line is above the signal line, confirming recent bullish momentum. |\\n\\n**Momentum Summary:** Momentum is very strong and bullish, confirmed by the MACD crossover and positive histogram. However, the RSI is deep in the overbought territory, signaling that the current upward move may be stretched and vulnerable to profit-taking.\\n\\n### 3. Volatility and Key Levels\\n\\n| Indicator | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **Bollinger Band Position** | 0.84 | Price is near the upper band (251.49), indicating high volatility and proximity to a short-term resistance extreme. |\\n| **Supertrend Signal** | Bullish (215.74) | Provides a strong dynamic support level. |\\n| **EMA 20** | 233.30 | Acts as immediate dynamic support. |\\n\\n**Volatility & Levels Summary:** Volatility is high, with the price pushing the upper Bollinger Band. This suggests the move is aggressive.\\n\\n### 4. Synthesis of Short-Term Signals\\n\\n| Indicator | Signal | Interpretation |\\n| :--- | :--- | :--- |\\n| **OBV Trend** | Rising | Confirms the price action; volume is supporting the uptrend. |\\n| **Candlestick Patterns** | Mixed/Bullish | Recent patterns show strong bullish conviction (Marubozu, Bullish Engulfing) but also a recent Bearish Engulfing, suggesting a battle between buyers and sellers at current highs. |\\n| **Supertrend** | Bullish | Confirms the short-term uptrend is intact. |\\n\\n**Short-Term Bias:** The short-term bias is **Bullish but Cautionary**. Strong volume (OBV) and trend indicators (Supertrend, EMA 20) support continued upward movement. However, the extreme RSI and the price's proximity to the upper Bollinger Band suggest that the rate of ascent may slow down, or a minor correction/consolidation phase is likely before the next leg up.\\n\\n---\\n\\n## Technical Outlook Summary\\n\\n| Metric | Assessment |\\n| :--- | :--- |\\n| **Primary Trend** | Strongly Bullish |\\n| **Momentum** | Strong, but Overbought (RSI > 70) |\\n| **Volatility** | High (Price near Upper BB) |\\n| **Volume Confirmation** | Confirmed (Rising OBV) |\\n| **Technical Bias** | **Bullish** |\\n\\n**Key Price Levels to Watch:**\\n\\n| Level Type | Price (USD) | Significance |\\n| :--- | :--- | :--- |\\n| **Immediate Resistance** | 251.49 | Upper Bollinger Band (Potential short-term ceiling). |\\n| **Immediate Support** | 233.30 | 20-day EMA (First line of dynamic support). |\\n| **Critical Support** | 218.99 | 50-day SMA (Intermediate-term trend defining support). |\\n| **Trend Confirmation** | 215.74 | Supertrend Level (Break below this would signal a trend reversal). |\\n\\n**Conclusion:** JPM is in a powerful uptrend, supported by strong momentum and volume. While the stock is currently overbought (RSI 74), the MACD and Supertrend confirm the bullish control. Traders should watch the **$251.49** level for potential resistance and use the **$233.30** (EMA 20) level as the primary short-term support for managing risk. The overall outlook remains bullish as long as the price holds above the 50-day SMA.\"",
+    "fundamental": "agent='FundamentalAnalyst' ticker='JPM' generated_at='2025-11-25T10:51:21.457986+00:00' data_source='cache' business_overview={'longBusinessSummary': None, 'sector': None, 'industry': None, 'marketCap': None, 'forwardPE': None, 'pegRatio': None} financial_ratios=FinancialRatios(pe_ratio=None, ps_ratio=None, debt_to_equity=None, current_ratio=None) financial_trends=[] qualitative_summary=QualitativeSummary(mdna_summary={'summary': 'Section unavailable.'}, risk_factors=[{'risk': 'Section unavailable.'}]) llm_synthesis={'overall_thesis': 'neutral', 'reasoning': \"## Fundamental Analysis Report: JPM\\n\\n**Analyst Note:** The provided quantitative data for JPM is severely limited (all key ratios are null, and financial trends are empty). The qualitative summaries (MD&A and Risk Factors) are also unavailable. This analysis will therefore be highly constrained and based primarily on the limited insider activity data and general knowledge of the company's sector (implied by the ticker JPM, JPMorgan Chase & Co., a major financial institution).\\n\\n---\\n\\n### SWOT Analysis\\n\\n| Category | Analysis |\\n| :--- | :--- |\\n| **Strengths** | **(Inferred)**: As a major financial institution (JPM), the company benefits from a massive, diversified revenue base (investment banking, commercial banking, asset management). Strong brand recognition and systemic importance (too big to fail). |\\n| **Weaknesses** | **Data Deficiency**: The lack of current financial data (P/E, D/E, growth rates) makes a proper fundamental assessment impossible. **(Inferred)**: Highly regulated industry, susceptible to interest rate volatility and economic downturns. |\\n| **Opportunities** | **(Inferred)**: Expansion into new digital banking services and fintech partnerships. Potential for increased net interest income (NII) in a favorable rate environment. |\\n| **Threats** | **(Inferred)**: Regulatory changes (e.g., capital requirements). Systemic financial crises. Competition from non-bank financial institutions and large technology companies entering the financial services space. |\\n\\n---\\n\\n### Financial Health\\n\\n**Rating: Undeterminable**\\n\\n**Justification:** A fundamental assessment of financial health requires key metrics such as profitability ratios (P/E, margins), leverage (D/E), and liquidity (Current Ratio). Since all these data points are missing or null, it is impossible to assign a meaningful financial health rating.\\n\\n---\\n\\n### Overall Thesis\\n\\n**Rating: Neutral (Data-Constrained)**\\n\\n**Justification:**\\n\\nThe analysis is severely hampered by the complete absence of quantitative financial data and critical qualitative context (MD&A, Risk Factors).\\n\\n*   **The only available data point is Insider Activity, which is 'Neutral' with 'Low Confidence'.** This suggests no immediate, strong directional signal from management or insiders regarding the company's near-term prospects.\\n*   **In the absence of data, we must default to a 'Neutral' rating.** While JPM is generally considered a high-quality, blue-chip financial institution (which would typically warrant a 'Bullish' bias), a fundamental analyst cannot justify a positive or negative rating without verifying current valuation, growth trajectory, and risk profile.\\n\\n**Recommendation:** **Further research is required.** A definitive fundamental rating cannot be issued until the P/E ratio, debt levels, revenue/earnings growth trends, and management's commentary on current operations and risks are obtained and analyzed.\"}",
+    "trade_thesis": "winning_argument='Bullish' conviction_level='Medium' summary=\"The bullish argument prevails because the overwhelming technical evidence, including accelerating momentum confirmed by volume, overrides the cautionary 'overbought' signal and the lack of fundamental data.\" key_evidence=['The On-Balance Volume (OBV) trend is Rising, confirming that the price advance is supported by genuine institutional accumulation.', 'The MACD shows a clear bullish crossover with a positive and increasing histogram (0.54), indicating strengthening momentum.', 'The stock is in a strong primary uptrend, trading significantly above its rising 50-day SMA ($218.99) and supported by a bullish Supertrend signal.', \"The 'overbought' condition (RSI 74.3) is often characteristic of powerful, accelerating uptrends and is not an immediate sell signal when confirmed by MACD and volume.\"]"
+  },
+  "greeks_history": [
+    {
+      "date": "2024-11-18T00:00:00",
+      "spot_price": 239.95050048828125,
+      "net_delta": 0.3741,
+      "net_gamma": 0.0042,
+      "net_theta": -0.0646,
+      "net_vega": 0.0855,
+      "net_rho": 0.0701,
+      "delta_dollars": 8975.64,
+      "theta_daily_dollars": -6.46,
+      "vega_dollars": 8.55
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "spot_price": 238.05072021484375,
+      "net_delta": 0.3916,
+      "net_gamma": 0.0066,
+      "net_theta": -0.0825,
+      "net_vega": 0.118,
+      "net_rho": 0.0718,
+      "delta_dollars": 9322.78,
+      "theta_daily_dollars": -8.25,
+      "vega_dollars": 11.8
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "spot_price": 238.05072021484375,
+      "net_delta": 0.3916,
+      "net_gamma": 0.0066,
+      "net_theta": -0.0825,
+      "net_vega": 0.118,
+      "net_rho": 0.0718,
+      "delta_dollars": 9322.78,
+      "theta_daily_dollars": -8.25,
+      "vega_dollars": 11.8
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "spot_price": 235.78858947753906,
+      "net_delta": 0.3547,
+      "net_gamma": 0.006,
+      "net_theta": -0.0881,
+      "net_vega": 0.1133,
+      "net_rho": 0.062,
+      "delta_dollars": 8363.12,
+      "theta_daily_dollars": -8.81,
+      "vega_dollars": 11.33
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "spot_price": 235.78858947753906,
+      "net_delta": 0.3547,
+      "net_gamma": 0.006,
+      "net_theta": -0.0881,
+      "net_vega": 0.1133,
+      "net_rho": 0.062,
+      "delta_dollars": 8363.12,
+      "theta_daily_dollars": -8.81,
+      "vega_dollars": 11.33
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "spot_price": 239.6860809326172,
+      "net_delta": 0.4031,
+      "net_gamma": 0.0059,
+      "net_theta": -0.0799,
+      "net_vega": 0.1029,
+      "net_rho": 0.0694,
+      "delta_dollars": 9661.45,
+      "theta_daily_dollars": -7.99,
+      "vega_dollars": 10.29
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "spot_price": 239.6860809326172,
+      "net_delta": 0.4031,
+      "net_gamma": 0.0059,
+      "net_theta": -0.0799,
+      "net_vega": 0.1029,
+      "net_rho": 0.0694,
+      "delta_dollars": 9661.45,
+      "theta_daily_dollars": -7.99,
+      "vega_dollars": 10.29
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "spot_price": 243.3975372314453,
+      "net_delta": 0.3796,
+      "net_gamma": 0.0026,
+      "net_theta": -0.0517,
+      "net_vega": 0.052,
+      "net_rho": 0.0624,
+      "delta_dollars": 9239.51,
+      "theta_daily_dollars": -5.17,
+      "vega_dollars": 5.2
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "spot_price": 243.3975372314453,
+      "net_delta": 0.3796,
+      "net_gamma": 0.0026,
+      "net_theta": -0.0517,
+      "net_vega": 0.052,
+      "net_rho": 0.0624,
+      "delta_dollars": 9239.51,
+      "theta_daily_dollars": -5.17,
+      "vega_dollars": 5.2
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-11-18T00:00:00",
+      "current_value": 979.94,
+      "pnl": -16.122444094521825,
+      "pnl_pct": -1.6186178075590487
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "current_value": 869.96,
+      "pnl": -126.10244409452184,
+      "pnl_pct": -12.660094238284051
+    },
+    {
+      "date": "2024-11-19T00:00:00",
+      "current_value": 869.96,
+      "pnl": -126.10244409452184,
+      "pnl_pct": -12.660094238284051
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "current_value": 822.54,
+      "pnl": -173.52244409452192,
+      "pnl_pct": -17.420839940638842
+    },
+    {
+      "date": "2024-11-20T00:00:00",
+      "current_value": 822.54,
+      "pnl": -173.52244409452192,
+      "pnl_pct": -17.420839940638842
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "current_value": 930.32,
+      "pnl": -65.74244409452183,
+      "pnl_pct": -6.600233196653198
+    },
+    {
+      "date": "2024-11-21T00:00:00",
+      "current_value": 930.32,
+      "pnl": -65.74244409452183,
+      "pnl_pct": -6.600233196653198
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "current_value": 1110.56,
+      "pnl": 114.49755590547807,
+      "pnl_pct": 11.49501786602977
+    },
+    {
+      "date": "2024-11-22T00:00:00",
+      "current_value": 1110.56,
+      "pnl": 114.49755590547807,
+      "pnl_pct": 11.49501786602977
+    }
+  ]
+}

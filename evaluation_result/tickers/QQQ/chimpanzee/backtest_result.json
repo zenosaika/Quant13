@@ -1,0 +1,17 @@
+{
+  "ticker": "QQQ",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 11327.9607751154,
+  "total_return": 1327.9607751153999,
+  "total_return_pct": 13.279607751154,
+  "num_trades": 13,
+  "num_winners": 8,
+  "num_losers": 5,
+  "win_rate": 0.6153846153846154,
+  "average_pnl": 102.15082885503074,
+  "max_drawdown": -0.12967605641716684,
+  "sharpe_ratio": 1.3065988178310306
+}

@@ -19,6 +19,7 @@ class StrategyType(Enum):
     LONG_CALL = "long_call"
     LONG_PUT = "long_put"
     SHORT_PUT = "short_put"  # Cash-secured put
+    SHORT_CALL = "short_call"  # Naked call (bearish leverage)
 
     # Vertical Spreads
     BULL_CALL_SPREAD = "bull_call_spread"
@@ -591,7 +592,7 @@ STRATEGY_LIBRARY: Dict[StrategyType, StrategyBlueprint] = {
 
         max_risk_type="limited",  # Strike - premium (if assigned)
         max_reward_type="limited",  # Premium received
-        capital_requirement="high",  # Cash-secured
+        capital_requirement="medium",  # Reduced for more leverage
 
         delta_exposure="positive",  # Short put = bullish
         vega_exposure="short_volatility",
@@ -607,6 +608,40 @@ STRATEGY_LIBRARY: Dict[StrategyType, StrategyBlueprint] = {
         ideal_iv_rank_min=50,
         ideal_iv_rank_max=100,
         ideal_conviction="low"
+    ),
+
+    StrategyType.SHORT_CALL: StrategyBlueprint(
+        name="Naked Call",
+        type=StrategyType.SHORT_CALL,
+        description="Sell call option. High leverage bearish play with unlimited risk.",
+
+        directional_bias="bearish",
+        volatility_regime="high_iv",  # Sell when IV is high
+        conviction_required="high",  # Only with strong conviction
+
+        leg_count=1,
+        legs=[
+            LegTemplate(action="SELL", option_type="CALL", strike_selection="otm", quantity=1)
+        ],
+
+        max_risk_type="unlimited",  # Naked call = unlimited upside risk
+        max_reward_type="limited",  # Premium received
+        capital_requirement="medium",  # Margin required
+
+        delta_exposure="negative",  # Short call = bearish
+        vega_exposure="short_volatility",
+        theta_exposure="positive",  # Theta decay benefits
+
+        min_dte=21,
+        max_dte=45,
+
+        strike_selection_rules={
+            "target_delta": (0.20, 0.30)  # OTM call
+        },
+
+        ideal_iv_rank_min=60,
+        ideal_iv_rank_max=100,
+        ideal_conviction="high"
     ),
 
     # ========================================================================

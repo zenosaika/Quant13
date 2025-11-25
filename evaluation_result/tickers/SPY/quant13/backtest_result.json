@@ -1,0 +1,17 @@
+{
+  "ticker": "SPY",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9774.958470486084,
+  "total_return": -225.04152951391552,
+  "total_return_pct": -2.250415295139155,
+  "num_trades": 13,
+  "num_winners": 9,
+  "num_losers": 4,
+  "win_rate": 0.6923076923076923,
+  "average_pnl": -17.310886885685825,
+  "max_drawdown": -0.04545288849150002,
+  "sharpe_ratio": -0.443800579193529
+}

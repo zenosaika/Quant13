@@ -1,0 +1,17 @@
+{
+  "ticker": "META",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10390.464729607465,
+  "total_return": 390.4647296074654,
+  "total_return_pct": 3.9046472960746543,
+  "num_trades": 13,
+  "num_winners": 10,
+  "num_losers": 3,
+  "win_rate": 0.7692307692307693,
+  "average_pnl": 30.035748431343492,
+  "max_drawdown": -0.06452431697533835,
+  "sharpe_ratio": 0.7605867363965858
+}

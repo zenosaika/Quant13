@@ -1,0 +1,17 @@
+{
+  "ticker": "MSFT",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9070.275798651655,
+  "total_return": -929.7242013483446,
+  "total_return_pct": -9.297242013483446,
+  "num_trades": 9,
+  "num_winners": 4,
+  "num_losers": 5,
+  "win_rate": 0.4444444444444444,
+  "average_pnl": -103.3026890387049,
+  "max_drawdown": -0.09918941585657941,
+  "sharpe_ratio": -2.8956868035168486
+}

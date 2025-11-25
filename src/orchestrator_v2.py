@@ -312,6 +312,24 @@ def run_pipeline_v2(
     )
 
     # ========================================================================
+    # PHASE 6.5: FUND MANAGER DECISION (NEW - CRITICAL FIX)
+    # ========================================================================
+    logger.info("Phase 6.5: Fund Manager final decision")
+
+    from src.agents.manager import FundManagerAgent
+
+    manager = FundManagerAgent(config["agents"].get("manager", {}))
+    final_decision = manager.run({
+        "trade_proposal": trade_proposal,
+        "risk_assessment": risk_assessment,
+        "trade_thesis": trade_thesis,
+    })
+
+    logger.info(f"  Execute trade: {final_decision['execute_trade']}")
+    logger.info(f"  Position sizing: {final_decision['final_sizing']}")
+    logger.info(f"  Rationale: {final_decision['manager_rationale']}")
+
+    # ========================================================================
     # PHASE 7: RESULTS PERSISTENCE
     # ========================================================================
     logger.info("Phase 7: Persisting results")
@@ -324,8 +342,33 @@ def run_pipeline_v2(
         "trade_thesis": trade_thesis,
         "trade_proposal": trade_proposal,
         "risk_assessment": risk_assessment,
+        "final_decision": final_decision,  # NEW: Add Fund Manager decision
         "risk_free_rate": risk_free_rate,
     }
+
+    # If trade rejected by Fund Manager, return early
+    if not final_decision["execute_trade"]:
+        logger.warning("Trade REJECTED by Fund Manager")
+        results["status"] = "rejected"
+        results["rejection_reason"] = final_decision["manager_rationale"]
+
+        # Still persist results for audit trail
+        results_directory, timestamp = _persist_results(ticker, results)
+        results["results_path"] = str(results_directory) if results_directory else None
+        results["timestamp"] = timestamp
+
+        return results
+
+    # Apply position sizing for approved trades
+    sizing_multiplier = {
+        "full": 1.0,
+        "half": 0.5,
+        "quarter": 0.25,
+        "none": 0.0
+    }.get(final_decision["final_sizing"], 0.5)
+
+    results["position_sizing_multiplier"] = sizing_multiplier
+    logger.info(f"  Applied sizing: {sizing_multiplier*100:.0f}%")
 
     results_directory, timestamp = _persist_results(ticker, results)
     results["results_path"] = str(results_directory) if results_directory else None
@@ -417,6 +460,7 @@ def _persist_results(ticker: str, results: Dict[str, object]) -> tuple[Path | No
         "trade_thesis.json": results["trade_thesis"].model_dump(),
         "trade_decision.json": results["trade_proposal"].model_dump(),
         "risk_assessment.json": results["risk_assessment"].model_dump(),
+        "final_decision.json": results["final_decision"],  # NEW: Save Fund Manager decision
     }
 
     for filename, payload in artifacts.items():

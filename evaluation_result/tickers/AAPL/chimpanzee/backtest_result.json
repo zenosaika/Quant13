@@ -1,0 +1,17 @@
+{
+  "ticker": "AAPL",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 7048.789290758228,
+  "total_return": -2951.210709241772,
+  "total_return_pct": -29.512107092417715,
+  "num_trades": 12,
+  "num_winners": 3,
+  "num_losers": 9,
+  "win_rate": 0.25,
+  "average_pnl": -245.9342257701476,
+  "max_drawdown": -0.30179715092619575,
+  "sharpe_ratio": -3.9836060817006436
+}

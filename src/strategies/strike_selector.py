@@ -24,7 +24,68 @@ class StrikeSelector:
     - Distance from spot
     - Probability of profit
     - Greeks characteristics
+    - Liquidity (Open Interest, Volume)
     """
+
+    def filter_liquid_options(
+        self,
+        options_df: pd.DataFrame,
+        min_open_interest: int = 100,
+        min_volume: int = 50,
+        min_bid: float = 0.05
+    ) -> pd.DataFrame:
+        """
+        Filter out illiquid options before strike selection
+
+        Args:
+            options_df: Options dataframe
+            min_open_interest: Minimum OI to consider liquid
+            min_volume: Minimum daily volume
+            min_bid: Minimum bid price (avoid pennies)
+
+        Returns:
+            Filtered dataframe with only liquid options
+        """
+        # Check if liquidity columns exist
+        has_oi = 'openInterest' in options_df.columns
+        has_volume = 'volume' in options_df.columns
+
+        if not has_oi and not has_volume:
+            logger.warning("No liquidity data available (OI/Volume missing)")
+            return options_df
+
+        # Build filter conditions
+        conditions = []
+
+        if has_oi:
+            # Handle NaN values
+            oi_values = options_df['openInterest'].fillna(0)
+            conditions.append(oi_values >= min_open_interest)
+
+        if has_volume:
+            vol_values = options_df['volume'].fillna(0)
+            conditions.append(vol_values >= min_volume)
+
+        # Bid price filter
+        if 'bid' in options_df.columns:
+            conditions.append(options_df['bid'] >= min_bid)
+
+        # Combine conditions
+        if conditions:
+            combined = conditions[0]
+            for condition in conditions[1:]:
+                combined &= condition
+
+            filtered = options_df[combined].copy()
+
+            logger.info(
+                f"Liquidity filter: {len(options_df)} → {len(filtered)} options "
+                f"(OI≥{min_open_interest}, Vol≥{min_volume})"
+            )
+
+            return filtered
+
+        return options_df
 
     def select_strikes_for_strategy(
         self,
@@ -34,7 +95,7 @@ class StrikeSelector:
         target_dte: int = 35
     ) -> List[Dict[str, Any]]:
         """
-        Select optimal strikes for all legs of a strategy
+        Select optimal strikes for all legs of a strategy (enhanced with liquidity filtering)
 
         Args:
             strategy: Strategy blueprint
@@ -62,6 +123,18 @@ class StrikeSelector:
             logger.error(f"No options found for expiration {target_expiration}")
             return []
 
+        # NEW: Filter by liquidity BEFORE strike selection
+        liquid_options = self.filter_liquid_options(
+            expiration_filtered,
+            min_open_interest=100,
+            min_volume=50,
+            min_bid=0.05
+        )
+
+        if liquid_options.empty:
+            logger.warning("No liquid options found, using all options")
+            liquid_options = expiration_filtered
+
         logger.info(f"Selected expiration {target_expiration} for all legs")
 
         selected_legs = []
@@ -70,7 +143,7 @@ class StrikeSelector:
             try:
                 selected = self._select_leg_strike(
                     leg_template,
-                    expiration_filtered,  # Use filtered dataframe
+                    liquid_options,  # Use liquidity-filtered dataframe
                     spot_price,
                     strategy.strike_selection_rules
                 )

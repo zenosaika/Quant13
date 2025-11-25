@@ -1,0 +1,184 @@
+{
+  "trade_id": "20241125_Bull Call Spread",
+  "execution": {
+    "entry_date": "2024-11-25T00:00:00",
+    "closed_date": "2024-11-26T00:00:00",
+    "expiration_date": "2024-12-27",
+    "days_held": 1
+  },
+  "market_context": {
+    "iv_rank": 0.02,
+    "atm_iv": 0.1661,
+    "historical_vol": 0.166,
+    "regime": "Normal Ranging",
+    "technical_sentiment": "Bullish"
+  },
+  "trade_proposal": {
+    "agent": "SystematicTraderAgent",
+    "strategy_name": "Bull Call Spread",
+    "action": "BUY_TO_OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241227_00235000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 235.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 5,
+        "key_greeks_at_selection": {
+          "delta": 0.435191717619981,
+          "gamma": 0.03452889111436564,
+          "theta": -0.08345900858368753,
+          "vega": 0.27021586182292806,
+          "impliedVolatility": null
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241227_00240000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 240.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 5,
+        "key_greeks_at_selection": {
+          "delta": 0.277312893299475,
+          "gamma": 0.029368266092270882,
+          "theta": -0.06826992340915879,
+          "vega": 0.22997854265876833,
+          "impliedVolatility": null
+        }
+      }
+    ],
+    "notes": "## Trade Recommendation: Bull Call Spread on [Underlying Ticker]\n\nGood morning. Based on our medium-conviction bullish thesis for the underlying asset, currently trading at $231.82, we are recommending a **Bull Call Spread** to capitalize on potential upside while managing capital efficiency.\n\n### Rationale and Strategy Alignment\n\nThe Bull Call Spread is the ideal strategy for a defined-risk bullish outlook, especially given the current market context. Our primary objective is to profit if the price moves higher, but we want to avoid the high cost and unlimited risk associated with simply buying a naked call. By simultaneously **buying the 235-strike Call** and **selling the 240-strike Call**, we establish a defined-risk, defined-reward structure. This strategy aligns perfectly with our medium-conviction thesis: we expect the price to rise, ideally moving above $235, but we are willing to cap our maximum profit at $240 in exchange for reducing the initial premium outlay (the net debit). Furthermore, with the IV Rank at 0.0, implied volatility is currently very low. While this strategy is not primarily a volatility play, the low IV means we are buying the spread at a relatively inexpensive price point.\n\n### Trade Structure and Mechanics\n\nThis trade is entered for a net debit, representing our maximum potential loss. The maximum profit is achieved if the underlying asset closes at or above the short strike of $240 at expiration. The maximum profit is calculated as the width of the strikes ($5.00) minus the net debit paid. Our breakeven point is the long strike ($235.00) plus the net debit. The structure is designed to participate in the move from the current price up to $240, providing a high probability of success if our bullish thesis plays out, while limiting the capital at risk if the market moves sideways or down.\n\n### Key Risks and Monitoring\n\nThe primary risk is that the underlying asset fails to move above the long strike of $235, resulting in the loss of the entire net debit paid. Since this is a defined-risk strategy, our maximum loss is strictly limited to this initial debit. We must monitor the price action closely. If the underlying price stalls significantly below $235, we may consider closing the spread early to salvage some premium, rather than holding to expiration. Conversely, if the price moves quickly toward $240, we may look to take profits early, as the spread will have captured most of its maximum value. This strategy requires the bullish move to occur within the expiration timeframe to be successful.\n\n```json\n{\n  \"strategy\": \"Bull Call Spread\",\n  \"legs\": [\n    {\n      \"action\": \"BUY\",\n      \"type\": \"CALL\",\n      \"strike\": 235.0,\n      \"delta\": 0.435191717619981\n    },\n    {\n      \"action\": \"SELL\",\n      \"type\": \"CALL\",\n      \"strike\": 240.0,\n      \"delta\": 0.277312893299475\n    }\n  ]\n}\n```",
+    "conviction_level": "Medium",
+    "generation_status": "generated",
+    "max_risk": 166.92656825330872,
+    "max_reward": 333.0734317466913,
+    "net_premium": -166.92656825330872
+  },
+  "position_details": {
+    "strategy_name": "Bull Call Spread",
+    "agent_name": "SystematicTraderAgent",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241227_00235000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 235.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 5,
+        "key_greeks_at_selection": {
+          "delta": 0.510412562017307,
+          "gamma": 0.03239223850886356,
+          "theta": -0.09488256565934314,
+          "vega": 0.27196653208133365,
+          "rho": 0.09726992242497595
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241227_00240000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 240.0,
+        "expiration_date": "2024-12-27",
+        "quantity": 5,
+        "key_greeks_at_selection": {
+          "delta": 0.35418570543455796,
+          "gamma": 0.03021398790535901,
+          "theta": -0.08482933384517105,
+          "vega": 0.25367785275844273,
+          "rho": 0.06795783696581757
+        }
+      }
+    ],
+    "thesis_direction": "Bullish"
+  },
+  "pricing": {
+    "entry_price": -855.4986622982071,
+    "exit_price": 996.801,
+    "spot_at_entry": 231.82151794433594,
+    "spot_at_exit": 234.0016632080078
+  },
+  "performance": {
+    "pnl": 141.3023377017929,
+    "pnl_pct": 16.516956008113333,
+    "status": "closed",
+    "highest_pnl_pct": 19.50457026473162
+  },
+  "position_greeks": {
+    "net_delta": 0.7811,
+    "net_gamma": 0.0109,
+    "net_theta": -0.0503,
+    "net_vega": 0.0914,
+    "net_rho": 0.1466,
+    "delta_dollars": 18278.67,
+    "theta_daily_dollars": -5.03,
+    "vega_dollars": 9.14
+  },
+  "agent_reports": {
+    "volatility": "agent='VolatilityModelingAgent' ticker='AAPL' iv_rank=0.0 volatility_forecast='Realized volatility is compressing below its 1-month average.' skew_analysis='Near-the-money skew is balanced between calls and puts.' term_structure='Flat term structure between near and far expirations.'",
+    "sentiment": "agent='SyntheticMeanReversion' ticker='AAPL' overall_sentiment_score=0.0 overall_summary='Choppy market. RSI: 69.7, Trend: 0.5%.' articles=[ArticleSentiment(title='AAPL range-bound', publisher='Mean Reversion Logic', link=None, published_at=None, summary=None, sentiment_score=0.0, rationale='No clear trend. Favor neutral strategies.')]",
+    "technical": "agent='TechnicalAnalyst' ticker='AAPL' indicators=TechnicalIndicators(latest_close=231.82151794433594, price_date='2024-11-25T00:00:00-05:00', SMA_50={'value': 226.84839080810548, 'slope': 0.1743569335937545, 'price_relationship': 'above'}, SMA_200={'value': None, 'slope': None, 'price_relationship': None}, EMA_20={'value': 227.02656048980668, 'price_relationship': 'above', 'slope': 0.25057216198244253}, Bollinger_Bands={'lower': 219.3930426513533, 'middle': 225.80786209106446, 'upper': 232.22268153077562, 'width': 12.829638879422305, 'price_position': 0.9687314981964836}, MACD_Signal={'macd': 0.5496780847934986, 'signal': -0.12686852480120722, 'histogram': 0.6765466095947058, 'crossover': 'bullish'}, RSI={'value': 69.70630699325612, 'regime': 'neutral'}, Supertrend_Signal={'trend': 'bearish', 'level': 233.97589707994538}, OBV_Trend={'value': 1499790000.0, 'trend': 'rising'}, recent_candlestick_patterns=[{'date': '2024-11-21T00:00:00-05:00', 'pattern': 'Doji', 'direction': 'neutral'}, {'date': '2024-11-13T00:00:00-05:00', 'pattern': 'Bullish Engulfing', 'direction': 'bullish'}, {'date': '2024-11-22T00:00:00-05:00', 'pattern': 'Bullish Engulfing', 'direction': 'bullish'}], derived_signals=[], key_levels={'recent_high': 233.01859945208068, 'recent_low': 218.48041626355018}) llm_report={'technical_bias': 'neutral', 'summary': '## Technical Analysis Report - AAPL\\n\\n| Metric | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **Latest Close** | $231.82 | - |\\n| **Primary Trend** | Bullish (50-SMA) | Price is above the rising 50-day SMA. |\\n| **Momentum (RSI)** | 69.71 | Approaching overbought territory (70). |\\n| **MACD Crossover** | Bullish | MACD line is above the signal line (strong momentum). |\\n| **Volatility (BB)** | High (0.97 position) | Price is near the upper Bollinger Band. |\\n| **Short-Term Bias** | Bullish | Strong buying pressure confirmed by volume and patterns. |\\n\\n---\\n\\n### 1. Primary Trend Identification\\n\\nThe primary trend is **Bullish**.\\n\\n*   The price ($231.82) is trading **above** the 50-day Simple Moving Average (SMA\\\\_50 at $226.85), and the SMA\\\\_50 itself has a positive slope ($0.17), indicating a healthy intermediate-term uptrend.\\n*   *Note: The 200-day SMA data is unavailable, but the relationship with the 50-SMA strongly suggests a bullish structure.*\\n*   The price is also well above the 20-day Exponential Moving Average (EMA\\\\_20 at $227.03), which is rising steeply ($0.25 slope), reinforcing the short-term bullish control.\\n\\n### 2. Momentum Assessment\\n\\nMomentum is currently **Strongly Bullish** but nearing exhaustion.\\n\\n*   **RSI (69.71):** The Relative Strength Index is just shy of the 70 threshold, indicating the asset is approaching **overbought** conditions. This suggests that while buying pressure is intense, a short-term pullback or consolidation may be imminent.\\n*   **MACD Signal (Bullish Crossover):** The MACD histogram is strongly positive (0.67), confirming a recent and powerful **bullish crossover**. This indicates accelerating upward momentum and strong buying interest.\\n\\n### 3. Volatility and Key Levels\\n\\nVolatility is moderate, with the price testing the upper boundary of the recent range.\\n\\n*   **Bollinger Bands:** The price is positioned at **0.97** (near the upper band at $232.22). This suggests the price is at an **extreme** relative to its recent volatility envelope, increasing the probability of a reversal or consolidation.\\n*   **Key Resistance:**\\n    *   **Immediate Resistance:** The Upper Bollinger Band ($232.22) and the recent high ($233.02).\\n    *   **Critical Resistance:** The Supertrend Bearish Level ($233.98). A decisive break and close above this level would flip the Supertrend signal to bullish and confirm a breakout.\\n*   **Key Support:**\\n    *   **Immediate Support:** The EMA\\\\_20 ($227.03) and the SMA\\\\_50 ($226.85). This confluence forms a strong support zone.\\n    *   **Major Support:** The Middle Bollinger Band ($225.81).\\n\\n### 4. Synthesis of Short-Term Signals\\n\\nThe short-term bias is **Bullish**, driven by strong volume and pattern confirmation, but caution is warranted due to overbought RSI and proximity to resistance.\\n\\n*   **Volume (OBV):** The **rising OBV trend** confirms that the recent price appreciation is supported by accumulating volume, lending credibility to the current uptrend.\\n*   **Candlestick Patterns:** The presence of two recent **Bullish Engulfing** patterns (Nov 13th and Nov 22nd) signals aggressive buying and a strong reversal of prior selling pressure. The recent Doji suggests a brief pause in the rally.\\n*   **Supertrend Conflict:** The Supertrend remains **bearish** (level at $233.98), acting as a significant overhead resistance. The market is currently challenging this critical level.\\n\\n### Technical Bias Summary\\n\\n| Component | Assessment |\\n| :--- | :--- |\\n| **Primary Trend** | Bullish |\\n| **Momentum** | Strongly Bullish (Overbought) |\\n| **Volume Confirmation** | Strong (Rising OBV) |\\n| **Short-Term Patterns** | Bullish Engulfing |\\n| **Overall Bias** | **BULLISH** |\\n\\n**Conclusion:** The technical outlook for AAPL is **BULLISH**. The stock is in a confirmed intermediate-term uptrend, supported by strong momentum (MACD) and volume (OBV). However, the RSI is nearing overbought territory, and the price is testing the upper Bollinger Band and the Supertrend resistance level, suggesting the rally may pause or consolidate soon.\\n\\n**Key Levels to Watch:**\\n\\n| Level Type | Price | Significance |\\n| :--- | :--- | :--- |\\n| **Critical Resistance (Breakout)** | **$233.98** | Supertrend flip level; a close above confirms a strong breakout. |\\n| **Immediate Resistance** | **$232.22** | Upper Bollinger Band. |\\n| **Immediate Support** | **$227.03 - $226.85** | Confluence of EMA\\\\_20 and SMA\\\\_50 (must hold to maintain uptrend). |\\n| **Major Support** | **$219.39** | Lower Bollinger Band. |'} llm_raw='## Technical Analysis Report - AAPL\\n\\n| Metric | Value | Interpretation |\\n| :--- | :--- | :--- |\\n| **Latest Close** | $231.82 | - |\\n| **Primary Trend** | Bullish (50-SMA) | Price is above the rising 50-day SMA. |\\n| **Momentum (RSI)** | 69.71 | Approaching overbought territory (70). |\\n| **MACD Crossover** | Bullish | MACD line is above the signal line (strong momentum). |\\n| **Volatility (BB)** | High (0.97 position) | Price is near the upper Bollinger Band. |\\n| **Short-Term Bias** | Bullish | Strong buying pressure confirmed by volume and patterns. |\\n\\n---\\n\\n### 1. Primary Trend Identification\\n\\nThe primary trend is **Bullish**.\\n\\n*   The price ($231.82) is trading **above** the 50-day Simple Moving Average (SMA\\\\_50 at $226.85), and the SMA\\\\_50 itself has a positive slope ($0.17), indicating a healthy intermediate-term uptrend.\\n*   *Note: The 200-day SMA data is unavailable, but the relationship with the 50-SMA strongly suggests a bullish structure.*\\n*   The price is also well above the 20-day Exponential Moving Average (EMA\\\\_20 at $227.03), which is rising steeply ($0.25 slope), reinforcing the short-term bullish control.\\n\\n### 2. Momentum Assessment\\n\\nMomentum is currently **Strongly Bullish** but nearing exhaustion.\\n\\n*   **RSI (69.71):** The Relative Strength Index is just shy of the 70 threshold, indicating the asset is approaching **overbought** conditions. This suggests that while buying pressure is intense, a short-term pullback or consolidation may be imminent.\\n*   **MACD Signal (Bullish Crossover):** The MACD histogram is strongly positive (0.67), confirming a recent and powerful **bullish crossover**. This indicates accelerating upward momentum and strong buying interest.\\n\\n### 3. Volatility and Key Levels\\n\\nVolatility is moderate, with the price testing the upper boundary of the recent range.\\n\\n*   **Bollinger Bands:** The price is positioned at **0.97** (near the upper band at $232.22). This suggests the price is at an **extreme** relative to its recent volatility envelope, increasing the probability of a reversal or consolidation.\\n*   **Key Resistance:**\\n    *   **Immediate Resistance:** The Upper Bollinger Band ($232.22) and the recent high ($233.02).\\n    *   **Critical Resistance:** The Supertrend Bearish Level ($233.98). A decisive break and close above this level would flip the Supertrend signal to bullish and confirm a breakout.\\n*   **Key Support:**\\n    *   **Immediate Support:** The EMA\\\\_20 ($227.03) and the SMA\\\\_50 ($226.85). This confluence forms a strong support zone.\\n    *   **Major Support:** The Middle Bollinger Band ($225.81).\\n\\n### 4. Synthesis of Short-Term Signals\\n\\nThe short-term bias is **Bullish**, driven by strong volume and pattern confirmation, but caution is warranted due to overbought RSI and proximity to resistance.\\n\\n*   **Volume (OBV):** The **rising OBV trend** confirms that the recent price appreciation is supported by accumulating volume, lending credibility to the current uptrend.\\n*   **Candlestick Patterns:** The presence of two recent **Bullish Engulfing** patterns (Nov 13th and Nov 22nd) signals aggressive buying and a strong reversal of prior selling pressure. The recent Doji suggests a brief pause in the rally.\\n*   **Supertrend Conflict:** The Supertrend remains **bearish** (level at $233.98), acting as a significant overhead resistance. The market is currently challenging this critical level.\\n\\n### Technical Bias Summary\\n\\n| Component | Assessment |\\n| :--- | :--- |\\n| **Primary Trend** | Bullish |\\n| **Momentum** | Strongly Bullish (Overbought) |\\n| **Volume Confirmation** | Strong (Rising OBV) |\\n| **Short-Term Patterns** | Bullish Engulfing |\\n| **Overall Bias** | **BULLISH** |\\n\\n**Conclusion:** The technical outlook for AAPL is **BULLISH**. The stock is in a confirmed intermediate-term uptrend, supported by strong momentum (MACD) and volume (OBV). However, the RSI is nearing overbought territory, and the price is testing the upper Bollinger Band and the Supertrend resistance level, suggesting the rally may pause or consolidate soon.\\n\\n**Key Levels to Watch:**\\n\\n| Level Type | Price | Significance |\\n| :--- | :--- | :--- |\\n| **Critical Resistance (Breakout)** | **$233.98** | Supertrend flip level; a close above confirms a strong breakout. |\\n| **Immediate Resistance** | **$232.22** | Upper Bollinger Band. |\\n| **Immediate Support** | **$227.03 - $226.85** | Confluence of EMA\\\\_20 and SMA\\\\_50 (must hold to maintain uptrend). |\\n| **Major Support** | **$219.39** | Lower Bollinger Band. |'",
+    "fundamental": "agent='FundamentalAnalyst' ticker='AAPL' generated_at='2025-11-25T10:50:12.609049+00:00' data_source='cache' business_overview={'longBusinessSummary': None, 'sector': None, 'industry': None, 'marketCap': None, 'forwardPE': None, 'pegRatio': None} financial_ratios=FinancialRatios(pe_ratio=None, ps_ratio=None, debt_to_equity=None, current_ratio=None) financial_trends=[] qualitative_summary=QualitativeSummary(mdna_summary={'summary': 'Section unavailable.'}, risk_factors=[{'risk': 'Section unavailable.'}]) llm_synthesis={'overall_thesis': 'neutral', 'reasoning': \"## Fundamental Analysis Report: AAPL\\n\\n**Analyst:** Meticulous Fundamental Analyst\\n**Date:** October 26, 2023\\n\\n---\\n\\n### Data Synthesis and Limitations\\n\\nThe provided data for AAPL is severely limited. Key quantitative metrics (P/E, P/S, D/E, Current Ratio, and multi-year financial trends) are entirely missing. Furthermore, the critical qualitative sections (MD&A and Risk Factors) from the 10-K/10-Q are unavailable.\\n\\nThis analysis must therefore rely solely on the general understanding of the company (Apple Inc.) and the limited insider activity data. **A definitive, data-driven intrinsic value assessment is impossible with the current input.** The following analysis is based on assumed industry knowledge and the structure of the provided (empty) data fields.\\n\\n---\\n\\n### SWOT Analysis (Based on Assumed Business Context)\\n\\n| Category | Analysis |\\n| :--- | :--- |\\n| **Strengths** | **Brand Loyalty & Ecosystem Lock-in:** Extremely high customer retention driven by the integrated hardware/software/services ecosystem (iPhone, Mac, iPad, Watch, Services). **Massive Cash Flow:** Generates enormous free cash flow, enabling aggressive R&D, share buybacks, and strategic acquisitions. **Services Growth:** High-margin, recurring revenue stream (App Store, Apple Music, iCloud) provides stability and valuation uplift. |\\n| **Weaknesses** | **Product Concentration:** Despite diversification efforts, the iPhone remains the primary revenue driver, exposing the company to cyclical smartphone demand. **High Price Point:** Premium pricing strategy limits market share growth in emerging markets compared to lower-cost Android competitors. |\\n| **Opportunities** | **New Product Categories:** Successful monetization of emerging technologies (e.g., Vision Pro, AR/VR, potential entry into automotive/health tech). **Services Expansion:** Continued penetration of existing users with new subscription offerings and higher average revenue per user (ARPU). **Emerging Markets:** Expanding distribution and financing options in large, under-penetrated markets like India. |\\n| **Threats** | **Regulatory Scrutiny:** Increasing antitrust pressure globally (US, EU) regarding App Store policies and ecosystem control, which could force changes to the high-margin Services business model. **Supply Chain Risk:** Heavy reliance on complex global supply chains, particularly in Asia, making it vulnerable to geopolitical tensions and manufacturing disruptions. **Technological Disruption:** A major shift in computing paradigms (e.g., AI-first devices) that could diminish the centrality of the smartphone. |\\n\\n---\\n\\n### Financial Health\\n\\n**Rating:** Undeterminable\\n\\n**Justification:** Without P/E, P/S, Debt-to-Equity, Current Ratio, or any revenue/net income trends, it is impossible to assess the company's profitability, valuation, liquidity, or solvency. *Assuming* the company is Apple Inc., its financial health is historically **Strong** (characterized by massive cash reserves, high margins, and excellent liquidity), but this cannot be confirmed by the provided data.\\n\\n---\\n\\n### Insider Activity Analysis\\n\\n**Signal:** Neutral (Low Confidence)\\n\\n**Summary:** The data shows zero insider buys and zero insider sells. The listed transactions appear to be non-open market transactions (likely option exercises or restricted stock unit (RSU) vesting, given the zero-value entries and the nature of the shares/value reported). This activity provides no directional signal regarding management's confidence in the stock's near-term valuation.\\n\\n---\\n\\n### Overall Thesis\\n\\n**Fundamental Rating:** Neutral (Data Insufficient)\\n\\n**Justification:**\\n\\nA fundamental rating requires robust quantitative data (valuation multiples, growth rates, margin trends) and qualitative insights (management commentary, risk assessment). Since **all critical data fields are missing or unavailable**, a responsible fundamental analyst cannot issue a definitive bullish or bearish rating.\\n\\n*If* this were a complete analysis of Apple Inc., the thesis would likely center on balancing its unparalleled business quality (ecosystem, brand, cash flow) against its mature growth profile and increasing regulatory risks. However, based strictly on the provided JSON input, the only defensible rating is **Neutral**, pending the availability of financial statements and corporate filings.\"}",
+    "trade_thesis": "winning_argument='Bullish' conviction_level='Medium' summary='The Bullish case prevails due to the confluence of strong, confirmed technical signals indicating an immediate breakout is likely, despite the stock being technically overbought and lacking fundamental support.' key_evidence=['The On-Balance Volume (OBV) trend is rising, confirming that the current price rally is supported by accumulating institutional volume.', 'The MACD histogram is strongly positive (0.67) confirming a recent and powerful bullish crossover, signaling accelerating upward momentum.', 'The stock is in a confirmed intermediate-term uptrend, trading above both the rising 50-day SMA ($226.85) and the sharply rising 20-day EMA ($227.03).', 'Volatility compression (below the 1-month average) is occurring directly beneath the critical Supertrend resistance level ($233.98), often preceding a volatility expansion and breakout.']"
+  },
+  "greeks_history": [
+    {
+      "date": "2024-11-25T00:00:00",
+      "spot_price": 231.82151794433594,
+      "net_delta": 0.7332,
+      "net_gamma": 0.0198,
+      "net_theta": -0.0701,
+      "net_vega": 0.1693,
+      "net_rho": 0.1414,
+      "delta_dollars": 16996.87,
+      "theta_daily_dollars": -7.01,
+      "vega_dollars": 16.93
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 234.0016632080078,
+      "net_delta": 0.7811,
+      "net_gamma": 0.0109,
+      "net_theta": -0.0503,
+      "net_vega": 0.0914,
+      "net_rho": 0.1466,
+      "delta_dollars": 18278.67,
+      "theta_daily_dollars": -5.03,
+      "vega_dollars": 9.14
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "spot_price": 234.0016632080078,
+      "net_delta": 0.7811,
+      "net_gamma": 0.0109,
+      "net_theta": -0.0503,
+      "net_vega": 0.0914,
+      "net_rho": 0.1466,
+      "delta_dollars": 18278.67,
+      "theta_daily_dollars": -5.03,
+      "vega_dollars": 9.14
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-11-25T00:00:00",
+      "current_value": 864.34,
+      "pnl": 8.841337701792895,
+      "pnl_pct": 1.033471832444667
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 1022.36,
+      "pnl": 166.86133770179288,
+      "pnl_pct": 19.50457026473162
+    },
+    {
+      "date": "2024-11-26T00:00:00",
+      "current_value": 1022.36,
+      "pnl": 166.86133770179288,
+      "pnl_pct": 19.50457026473162
+    }
+  ]
+}

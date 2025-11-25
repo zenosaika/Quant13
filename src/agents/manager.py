@@ -14,14 +14,13 @@ import json
 import logging
 from typing import Any, Dict
 
-from src.agents.base import BaseAgent
 from src.models.schemas import RiskAssessment, TradeProposal
-from src.tools.llm import call_llm
+from src.tools.llm import get_llm_client
 
 logger = logging.getLogger(__name__)
 
 
-class FundManagerAgent(BaseAgent):
+class FundManagerAgent:
     """
     Fund Manager: Makes final trade execution decision
 
@@ -32,6 +31,10 @@ class FundManagerAgent(BaseAgent):
     - Determines position sizing based on risk/reward and conviction
     - Acts as tie-breaker between profit motive and risk aversion
     """
+
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.llm = get_llm_client()
 
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -81,10 +84,12 @@ class FundManagerAgent(BaseAgent):
         prompt = self._build_manager_prompt(proposal_summary, risk_summary, thesis_summary)
 
         try:
-            response = call_llm(
-                prompt=prompt,
-                temperature=0.1,  # Low temperature for consistent decisions
-                max_tokens=1000,
+            response = self.llm.chat(
+                messages=[
+                    {"role": "system", "content": self.config.get("prompt", self._default_prompt())},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.config.get("temperature", 0.1),  # Low temperature for consistent decisions
             )
 
             # Parse LLM response (expecting JSON)

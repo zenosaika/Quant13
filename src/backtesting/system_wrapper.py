@@ -87,122 +87,85 @@ def generate_synthetic_sentiment(ohlcv: pd.DataFrame, ticker: str) -> SentimentR
     macd_crossover = "bullish" if macd_line.iloc[-1] > signal_line.iloc[-1] else "bearish"
 
     # ========================================================================
-    # LOGIC: Default to Neutral (Iron Condor) unless proven otherwise
+    # FIXED: SIMPLIFIED SIGNAL HIERARCHY (Clear Priority)
     # ========================================================================
-    # VARIANCE HARVESTING LOGIC: Mean Reversion FIRST, Trend Following LAST
-    # Priority: RSI extremes > MACD Filter > Default Neutral > Trend (only if clean)
+    # Priority Order:
+    # 1. RSI Extremes (>70 or <30) → NEUTRAL (avoid chasing parabolic moves)
+    # 2. Strong Trends (>7% SMA separation + neutral RSI) → DIRECTIONAL
+    # 3. MACD Confirmation → BOOST directional signals
+    # 4. Default → NEUTRAL (variance harvesting)
     # ========================================================================
     score = 0.0
     regime = "Choppy/Neutral"
     summary = ""
     articles = []
 
-    # FIRST: Mean Reversion (HIGHEST PRIORITY - overrides trend)
-    # If RSI is extreme, default to NEUTRAL (Iron Condor) to avoid chasing parabolic moves
-    if curr_rsi > 70:  # Lowered threshold (was 75) - more conservative
-        score = 0.0  # NEUTRAL → Iron Condor (don't chase overbought)
-        regime = "Overbought (Iron Condor)"
-        summary = f"Overbought (RSI {curr_rsi:.1f}). Default to Iron Condor. Trend: {trend_strength:.1%}."
-        articles.append(ArticleSentiment(
-            title=f"{ticker} overbought - avoid directional",
-            publisher="Mean Reversion Logic",
-            sentiment_score=0.0,
-            rationale=f"RSI {curr_rsi:.1f} overbought. Don't chase. Sell premium (Iron Condor)."
-        ))
-
-    elif curr_rsi < 30:  # Lowered threshold (was 25) - more conservative
-        score = 0.0  # NEUTRAL → Iron Condor (don't chase oversold)
-        regime = "Oversold (Iron Condor)"
-        summary = f"Oversold (RSI {curr_rsi:.1f}). Default to Iron Condor. Trend: {trend_strength:.1%}."
-        articles.append(ArticleSentiment(
-            title=f"{ticker} oversold - avoid directional",
-            publisher="Mean Reversion Logic",
-            sentiment_score=0.0,
-            rationale=f"RSI {curr_rsi:.1f} oversold. Don't chase. Sell premium (Iron Condor)."
-        ))
-
-    # SECOND: Strong Trend (Only if RSI is NOT extreme AND separation > 5%)
-    # CRITICAL FIX #3: Increased directional strength for trending markets
-    elif trend_strength > 0.07 and 30 <= curr_rsi <= 70:
-        # Very strong trend (7%+) - increase score to 0.6
-        if sma20 > sma50:
-            score = 0.6  # Strong Bullish
-            regime = "Strong Uptrend"
-            summary = f"Strong uptrend. SMA separation: {trend_strength:.1%}. RSI: {curr_rsi:.1f}. MACD: {macd_crossover}."
-            articles.append(ArticleSentiment(
-                title=f"{ticker} strong uptrend",
-                publisher="Mean Reversion Logic",
-                sentiment_score=0.6,
-                rationale=f"Very strong trend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
-            ))
-        else:
-            score = -0.6  # Strong Bearish
-            regime = "Strong Downtrend"
-            summary = f"Strong downtrend. SMA separation: {trend_strength:.1%}. RSI: {curr_rsi:.1f}. MACD: {macd_crossover}."
-            articles.append(ArticleSentiment(
-                title=f"{ticker} strong downtrend",
-                publisher="Mean Reversion Logic",
-                sentiment_score=-0.6,
-                rationale=f"Very strong downtrend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
-            ))
-
-    elif trend_strength > 0.05 and 30 <= curr_rsi <= 70:
-        # Moderate trend (5-7%)
-        if sma20 > sma50:
-            score = 0.4  # Moderate Bullish
-            regime = "Confirmed Uptrend"
-            summary = f"Uptrend confirmed. SMA separation: {trend_strength:.1%}. RSI: {curr_rsi:.1f}. MACD: {macd_crossover}."
-            articles.append(ArticleSentiment(
-                title=f"{ticker} uptrend",
-                publisher="Mean Reversion Logic",
-                sentiment_score=0.4,
-                rationale=f"Moderate trend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
-            ))
-        else:
-            score = -0.4  # Moderate Bearish
-            regime = "Confirmed Downtrend"
-            summary = f"Downtrend confirmed. SMA separation: {trend_strength:.1%}. RSI: {curr_rsi:.1f}. MACD: {macd_crossover}."
-            articles.append(ArticleSentiment(
-                title=f"{ticker} downtrend",
-                publisher="Mean Reversion Logic",
-                sentiment_score=-0.4,
-                rationale=f"Moderate downtrend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
-            ))
-
-    # DEFAULT: Choppy/Neutral (This should be the MOST COMMON case)
-    else:
+    # PRIORITY 1: RSI Extremes → Force Neutral (highest priority)
+    if curr_rsi > 70 or curr_rsi < 30:
         score = 0.0  # NEUTRAL → Iron Condor
-        regime = "Range-Bound/Choppy"
-        summary = f"Market choppy/neutral. RSI: {curr_rsi:.1f}, Trend: {trend_strength:.1%}, BB: {bb_width:.2f}."
+        regime = "Overbought" if curr_rsi > 70 else "Oversold"
+        summary = f"RSI extreme ({curr_rsi:.1f}). Avoid directional bias. Default to neutral strategies."
+        articles.append(ArticleSentiment(
+            title=f"{ticker} RSI extreme - neutral strategy",
+            publisher="Mean Reversion Logic",
+            sentiment_score=0.0,
+            rationale=f"RSI {curr_rsi:.1f} {'overbought' if curr_rsi > 70 else 'oversold'}. Don't chase extremes."
+        ))
+
+    # PRIORITY 2: Strong Trend (only if RSI is neutral 30-70)
+    elif trend_strength > 0.07 and 30 <= curr_rsi <= 70:
+        # Very strong trend (>7% SMA separation)
+        direction = 1 if sma20 > sma50 else -1
+        score = 0.6 * direction
+        regime = "Strong Uptrend" if direction > 0 else "Strong Downtrend"
+        summary = f"Strong trend. SMA separation: {trend_strength:.1%}, RSI: {curr_rsi:.1f}."
+        articles.append(ArticleSentiment(
+            title=f"{ticker} strong trend",
+            publisher="Mean Reversion Logic",
+            sentiment_score=score,
+            rationale=f"Strong trend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
+        ))
+
+    # PRIORITY 3: Moderate Trend (5-7% SMA separation)
+    elif trend_strength > 0.05 and 30 <= curr_rsi <= 70:
+        direction = 1 if sma20 > sma50 else -1
+        score = 0.4 * direction
+        regime = "Moderate Uptrend" if direction > 0 else "Moderate Downtrend"
+        summary = f"Moderate trend. SMA separation: {trend_strength:.1%}, RSI: {curr_rsi:.1f}."
+        articles.append(ArticleSentiment(
+            title=f"{ticker} moderate trend",
+            publisher="Mean Reversion Logic",
+            sentiment_score=score,
+            rationale=f"Moderate trend ({trend_strength:.1%}) with neutral RSI ({curr_rsi:.1f})."
+        ))
+
+    # PRIORITY 4: Default Neutral (most common case)
+    else:
+        score = 0.0
+        regime = "Range-Bound"
+        summary = f"Choppy market. RSI: {curr_rsi:.1f}, Trend: {trend_strength:.1%}."
         articles.append(ArticleSentiment(
             title=f"{ticker} range-bound",
             publisher="Mean Reversion Logic",
             sentiment_score=0.0,
-            rationale=f"No strong trend ({trend_strength:.1%}). Favor Iron Condor (sell premium)."
+            rationale=f"No clear trend. Favor neutral strategies."
         ))
 
     # ========================================================================
-    # CRITICAL FIX #2: MACD Momentum Enhancement (REVISED)
+    # MACD CONFIRMATION: Boost directional signals if MACD agrees
     # ========================================================================
-    # Instead of BLOCKING trades when MACD disagrees, use MACD to CONFIRM
-    # strong trends and BOOST the signal.
-    #
-    # If MACD agrees with trend: BOOST signal (helps catch trends earlier)
-    # If MACD disagrees: Keep original signal (don't force neutral)
-    #
-    if macd_crossover == "bullish" and score > 0.3:
-        # MACD confirms uptrend - boost signal
-        logger.info(f"MACD bullish confirming uptrend (score {score:.2f}) - boosting to 0.7")
-        score = 0.7  # Strong bullish
+    # Only boost existing directional signals, never override neutral signals
+    if score > 0.3 and macd_crossover == "bullish":
+        logger.info(f"MACD confirms bullish trend (score {score:.2f}) → boosting to 0.7")
+        score = 0.7
         regime = "MACD Confirmed Uptrend"
-        summary = f"MACD bullish ({macd_line.iloc[-1]:.2f} > {signal_line.iloc[-1]:.2f}) confirms uptrend. Strong buy signal."
+        summary = f"MACD bullish confirms uptrend. Strong buy signal."
 
-    elif macd_crossover == "bearish" and score < -0.3:
-        # MACD confirms downtrend - boost signal
-        logger.info(f"MACD bearish confirming downtrend (score {score:.2f}) - boosting to -0.7")
-        score = -0.7  # Strong bearish
+    elif score < -0.3 and macd_crossover == "bearish":
+        logger.info(f"MACD confirms bearish trend (score {score:.2f}) → boosting to -0.7")
+        score = -0.7
         regime = "MACD Confirmed Downtrend"
-        summary = f"MACD bearish ({macd_line.iloc[-1]:.2f} < {signal_line.iloc[-1]:.2f}) confirms downtrend. Strong sell signal."
+        summary = f"MACD bearish confirms downtrend. Strong sell signal."
 
     return SentimentReport(
         agent="SyntheticMeanReversion",
@@ -260,12 +223,16 @@ def run_system_backtest(
         if "time_to_expiration_years" in expiry:
             dte = expiry.get('time_to_expiration_years', 0) * 365
         else:
-            # Estimate DTE from expiration_date if available
-            exp_date_str = expiry.get('expiration_date', '')
+            # Bug #10 FIX: Use 'expiration' key (not 'expiration_date')
+            # historical_options.py uses "expiration": exp_date.strftime("%Y-%m-%d")
+            exp_date_str = expiry.get('expiration') or expiry.get('expiration_date', '')
             if exp_date_str:
                 try:
                     exp_date = datetime.fromisoformat(exp_date_str.replace('Z', '+00:00'))
                     current_date = ohlcv.index[-1]
+                    # Handle timezone-aware index
+                    if hasattr(current_date, 'tzinfo') and current_date.tzinfo is not None:
+                        current_date = current_date.replace(tzinfo=None)
                     dte = (exp_date - current_date).days
                 except:
                     dte = 30  # Default fallback
@@ -408,6 +375,12 @@ def run_system_backtest(
         logger.info(f"  [Direction Unchanged] {trade_thesis.winning_argument} (Raw Score: {raw_score:.2f})")
 
     # ========================================================================
+    # 4. TECHNICAL ALIGNMENT (Moved to after trade construction - see below)
+    # ========================================================================
+    # Technical alignment now happens AFTER we extract tech_bias properly
+    # in the trade construction phase (lines ~459-492)
+
+    # ========================================================================
     # ADAPTIVE STRATEGY SELECTION: Match strategy to market regime
     # ========================================================================
     # CRITICAL FIX #5: Don't force variance harvesting in ALL markets
@@ -458,9 +431,106 @@ def run_system_backtest(
             return None
 
     # ========================================================================
-    # PHASE 3: TRADE CONSTRUCTION
+    # PHASE 3: TRADE CONSTRUCTION (ENHANCED WITH TECHNICAL BIAS)
     # ========================================================================
     logger.info("Generating trade proposal")
+
+    # Extract technical bias from technical report for trend alignment
+    # This is the KEY improvement - pass technical signals to strategy selector
+    technical_bias = None
+    if technical_report:
+        # Method 1: Try llm_report dict
+        if hasattr(technical_report, 'llm_report') and isinstance(technical_report.llm_report, dict):
+            technical_bias = technical_report.llm_report.get('technical_bias')
+
+        # Method 2: If llm_report bias is neutral or None, check the raw LLM output for actual bias
+        # The raw output often contains the real technical_bias in JSON format
+        if (technical_bias is None or technical_bias == 'neutral') and hasattr(technical_report, 'llm_raw'):
+            raw = technical_report.llm_raw or ""
+            # Look for explicit "technical_bias" field in JSON output
+            import re
+            match = re.search(r'"technical_bias"\s*:\s*"(\w+)"', raw, re.IGNORECASE)
+            if match:
+                extracted = match.group(1).lower()
+                if extracted in ['bullish', 'bearish', 'neutral']:
+                    technical_bias = extracted
+                    logger.info(f"  [Technical bias extracted from llm_raw: {extracted}]")
+
+        # Method 3: Fall back to looking for bias keywords in summary
+        if technical_bias is None or technical_bias == 'neutral':
+            if hasattr(technical_report, 'llm_raw'):
+                raw = (technical_report.llm_raw or "").lower()
+                # Count bullish vs bearish mentions to determine bias
+                bullish_count = raw.count('bullish')
+                bearish_count = raw.count('bearish')
+                if bullish_count > bearish_count + 2:  # Clear bullish majority
+                    technical_bias = "bullish"
+                elif bearish_count > bullish_count + 2:  # Clear bearish majority
+                    technical_bias = "bearish"
+
+    # ========================================================================
+    # COMPUTE TECHNICAL BIAS FROM PRICE ACTION (Most Reliable Method)
+    # ========================================================================
+    # Use the SAME logic as the Technical Baseline strategy for consistency!
+    # This ensures Quant13 never fights the same trends that Technical follows.
+    price_based_bias = None
+    try:
+        current_price = ohlcv['close'].iloc[-1]
+
+        # SMA 20 (same as Technical baseline)
+        sma_20 = ohlcv['close'].rolling(20).mean().iloc[-1] if len(ohlcv) >= 20 else ohlcv['close'].mean()
+
+        # MACD (same as Technical baseline)
+        ema_12 = ohlcv['close'].ewm(span=12, adjust=False).mean().iloc[-1]
+        ema_26 = ohlcv['close'].ewm(span=26, adjust=False).mean().iloc[-1]
+        macd_line = ema_12 - ema_26
+
+        # Use EXACTLY the same conditions as Technical baseline
+        # Bullish: Price > SMA20 AND MACD > 0
+        # Bearish: Price < SMA20 AND MACD < 0
+        if current_price > sma_20 and macd_line > 0:
+            price_based_bias = "bullish"
+        elif current_price < sma_20 and macd_line < 0:
+            price_based_bias = "bearish"
+        else:
+            price_based_bias = "neutral"
+
+        logger.info(f"  Price-based technical bias: {price_based_bias} (price vs SMA20: {current_price/sma_20:.2%}, MACD: {macd_line:.2f})")
+    except Exception as e:
+        logger.warning(f"  Could not compute price-based bias: {e}")
+        price_based_bias = technical_bias  # Fallback to extracted bias
+
+    # Use price-based bias if available, otherwise use extracted
+    final_technical_bias = price_based_bias if price_based_bias else technical_bias
+    logger.info(f"  Final technical bias for strategy selection: {final_technical_bias}")
+
+    # ========================================================================
+    # TECHNICAL ALIGNMENT: Override thesis direction to match technical trend
+    # ========================================================================
+    # This is the CRITICAL fix - if technicals are bullish, don't go bearish!
+    if final_technical_bias and final_technical_bias != 'neutral':
+        current_direction = trade_thesis.winning_argument.lower()
+
+        if final_technical_bias == 'bullish' and current_direction != 'bullish':
+            if raw_score > -0.7:  # Only keep bearish if sentiment is EXTREMELY bearish
+                logger.info(f"  [TECHNICAL ALIGNMENT] {trade_thesis.winning_argument} → Bullish (aligning with tech trend)")
+                trade_thesis.winning_argument = "Bullish"
+                trade_thesis.summary = f"Technical trend bullish. Aligning thesis with price momentum."
+                if trade_thesis.conviction_level.lower() == 'low':
+                    trade_thesis.conviction_level = 'Medium'
+                    logger.info(f"  [CONVICTION BOOST] Low → Medium (trend-aligned)")
+
+        elif final_technical_bias == 'bearish' and current_direction != 'bearish':
+            if raw_score < 0.7:  # Only keep bullish if sentiment is EXTREMELY bullish
+                logger.info(f"  [TECHNICAL ALIGNMENT] {trade_thesis.winning_argument} → Bearish (aligning with tech trend)")
+                trade_thesis.winning_argument = "Bearish"
+                trade_thesis.summary = f"Technical trend bearish. Aligning thesis with price momentum."
+                if trade_thesis.conviction_level.lower() == 'low':
+                    trade_thesis.conviction_level = 'Medium'
+                    logger.info(f"  [CONVICTION BOOST] Low → Medium (trend-aligned)")
+
+    # Update technical_bias for strategy selector
+    technical_bias = final_technical_bias
 
     # Use systematic trader for deterministic results
     trader = SystematicTraderAgent(config["agents"]["trader"])
@@ -468,7 +538,8 @@ def run_system_backtest(
         trade_thesis,
         volatility_report,
         options_chain,
-        spot_price
+        spot_price,
+        technical_bias=technical_bias  # NEW: Pass technical bias for trend alignment
     )
 
     logger.info(f"  Proposed: {trade_proposal.strategy_name}")

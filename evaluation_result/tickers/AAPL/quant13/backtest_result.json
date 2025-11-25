@@ -1,0 +1,17 @@
+{
+  "ticker": "AAPL",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9321.011993845248,
+  "total_return": -678.9880061547519,
+  "total_return_pct": -6.789880061547519,
+  "num_trades": 13,
+  "num_winners": 8,
+  "num_losers": 5,
+  "win_rate": 0.6153846153846154,
+  "average_pnl": -52.22984662728855,
+  "max_drawdown": -0.10986125520928126,
+  "sharpe_ratio": -1.123683481162483
+}

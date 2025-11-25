@@ -1,0 +1,17 @@
+{
+  "ticker": "JPM",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9446.465580304102,
+  "total_return": -553.5344196958977,
+  "total_return_pct": -5.5353441969589765,
+  "num_trades": 7,
+  "num_winners": 4,
+  "num_losers": 3,
+  "win_rate": 0.5714285714285714,
+  "average_pnl": -79.07634567084264,
+  "max_drawdown": -0.07822987163651068,
+  "sharpe_ratio": -1.5799680559647706
+}

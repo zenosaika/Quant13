@@ -8,7 +8,7 @@ to generate consistent, explainable trades.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import logging
 
 from src.models.schemas import TradeLeg, TradeProposal, TradeThesis, VolatilityReport
@@ -46,6 +46,7 @@ class SystematicTraderAgent:
         volatility_report: VolatilityReport,
         options_chain: List[Dict[str, Any]],
         spot_price: float,
+        technical_bias: Optional[str] = None,  # NEW: Pass technical bias for trend alignment
     ) -> TradeProposal:
         """
         Generate trade proposal using systematic approach
@@ -65,11 +66,11 @@ class SystematicTraderAgent:
             TradeProposal with all details
         """
         try:
-            # 1. Select strategy systematically
+            # 1. Select strategy systematically (now with technical bias for trend alignment)
             ranked_strategies = self.selector.select_strategy(
                 thesis=thesis,
                 volatility=volatility_report,
-                technical_bias=None
+                technical_bias=technical_bias  # ENHANCED: Pass technical bias
             )
 
             if not ranked_strategies:

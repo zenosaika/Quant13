@@ -1,0 +1,17 @@
+{
+  "ticker": "GOOGL",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 5363.8106337214285,
+  "total_return": -4636.1893662785715,
+  "total_return_pct": -46.36189366278571,
+  "num_trades": 11,
+  "num_winners": 2,
+  "num_losers": 9,
+  "win_rate": 0.18181818181818182,
+  "average_pnl": -421.4717605707793,
+  "max_drawdown": -0.46361893662785714,
+  "sharpe_ratio": -2.6285231385946104
+}

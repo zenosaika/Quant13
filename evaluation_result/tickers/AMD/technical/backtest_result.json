@@ -1,0 +1,17 @@
+{
+  "ticker": "AMD",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 8365.59208629538,
+  "total_return": -1634.4079137046192,
+  "total_return_pct": -16.34407913704619,
+  "num_trades": 8,
+  "num_winners": 2,
+  "num_losers": 6,
+  "win_rate": 0.25,
+  "average_pnl": -204.30098921307743,
+  "max_drawdown": -0.1744595611915298,
+  "sharpe_ratio": -4.313982909258585
+}

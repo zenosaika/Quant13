@@ -1,0 +1,17 @@
+{
+  "ticker": "AMD",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10249.309552610881,
+  "total_return": 249.30955261088093,
+  "total_return_pct": 2.4930955261088092,
+  "num_trades": 13,
+  "num_winners": 8,
+  "num_losers": 5,
+  "win_rate": 0.6153846153846154,
+  "average_pnl": 19.17765789314467,
+  "max_drawdown": -0.09499661585483354,
+  "sharpe_ratio": 0.4351432235303208
+}

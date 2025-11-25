@@ -1,0 +1,17 @@
+{
+  "ticker": "GOOGL",
+  "strategy_name": "quant13",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 11179.805757008868,
+  "total_return": 1179.8057570088677,
+  "total_return_pct": 11.798057570088677,
+  "num_trades": 13,
+  "num_winners": 10,
+  "num_losers": 3,
+  "win_rate": 0.7692307692307693,
+  "average_pnl": 90.75428900068216,
+  "max_drawdown": -0.04623239711873666,
+  "sharpe_ratio": 2.1899218563688305
+}

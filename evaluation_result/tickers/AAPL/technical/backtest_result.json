@@ -1,0 +1,17 @@
+{
+  "ticker": "AAPL",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 8238.29751129495,
+  "total_return": -1761.7024887050502,
+  "total_return_pct": -17.617024887050505,
+  "num_trades": 8,
+  "num_winners": 3,
+  "num_losers": 5,
+  "win_rate": 0.375,
+  "average_pnl": -220.2128110881314,
+  "max_drawdown": -0.1975564738705052,
+  "sharpe_ratio": -3.7919490726327725
+}

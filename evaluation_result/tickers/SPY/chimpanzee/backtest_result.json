@@ -1,0 +1,17 @@
+{
+  "ticker": "SPY",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 3331.1563048555945,
+  "total_return": -6668.8436951444055,
+  "total_return_pct": -66.68843695144405,
+  "num_trades": 11,
+  "num_winners": 4,
+  "num_losers": 7,
+  "win_rate": 0.36363636363636365,
+  "average_pnl": -606.2585177404005,
+  "max_drawdown": -0.6668843695144405,
+  "sharpe_ratio": -3.4948388609619903
+}

@@ -1,0 +1,17 @@
+{
+  "ticker": "SPY",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10304.017520306807,
+  "total_return": 304.01752030680655,
+  "total_return_pct": 3.040175203068065,
+  "num_trades": 7,
+  "num_winners": 5,
+  "num_losers": 2,
+  "win_rate": 0.7142857142857143,
+  "average_pnl": 43.431074329543925,
+  "max_drawdown": -0.04728006887116817,
+  "sharpe_ratio": 0.8709134334437623
+}

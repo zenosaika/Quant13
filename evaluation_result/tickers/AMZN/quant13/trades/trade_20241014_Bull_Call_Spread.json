@@ -1,0 +1,292 @@
+{
+  "trade_id": "20241014_Bull Call Spread",
+  "execution": {
+    "entry_date": "2024-10-14T00:00:00",
+    "closed_date": "2024-10-18T00:00:00",
+    "expiration_date": "2024-11-15",
+    "days_held": 4
+  },
+  "market_context": {
+    "iv_rank": 43.86,
+    "atm_iv": 0.2641,
+    "historical_vol": 0.264,
+    "regime": "Normal Ranging",
+    "technical_sentiment": "Bullish"
+  },
+  "trade_proposal": {
+    "agent": "SystematicTraderAgent",
+    "strategy_name": "Bull Call Spread",
+    "action": "BUY_TO_OPEN",
+    "quantity": 1,
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241115_00190000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 190.0,
+        "expiration_date": "2024-11-15",
+        "quantity": 3,
+        "key_greeks_at_selection": {
+          "delta": 0.4715081981848717,
+          "gamma": 0.027130587009102876,
+          "theta": -0.10260818781552672,
+          "vega": 0.2209647790947897,
+          "impliedVolatility": null
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241115_00195000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 195.0,
+        "expiration_date": "2024-11-15",
+        "quantity": 3,
+        "key_greeks_at_selection": {
+          "delta": 0.3433893666618484,
+          "gamma": 0.025056162974911568,
+          "theta": -0.0927348667989463,
+          "vega": 0.20423281118132267,
+          "impliedVolatility": null
+        }
+      }
+    ],
+    "notes": "Subject: Trade Recommendation: Bull Call Spread on [Underlying Ticker]\n\nDear [Client Name],\n\nBased on our medium-conviction bullish thesis for the underlying asset, we are recommending a **Bull Call Spread** to capitalize on a moderate upward move while managing capital efficiently. This strategy perfectly aligns with our directional bias because it is a defined-risk, positive-delta position designed to profit as the stock price increases. Given the current IV Rank of 43.8 and the forecast for stable volatility, the Bull Call Spread allows us to participate in the upside without paying the full premium of an outright long call, making it a cost-effective way to express our bullish view.\n\nThe proposed structure involves **buying the 190.0 Call** and simultaneously **selling the 195.0 Call** in the same expiration cycle. This creates a vertical spread with a maximum potential profit equal to the difference between the strikes (\\$5.00) minus the net premium paid (the debit). The maximum loss is strictly limited to the net premium paid upfront. The trade becomes profitable once the stock rises above the break-even point (lower strike plus net debit). By selling the higher strike call, we partially finance the purchase of the lower strike, reducing our initial cost and risk exposure compared to a simple long call.\n\nThe primary risk to monitor is the stock failing to move above the 190.0 strike before expiration, resulting in the loss of the net premium paid. While the defined-risk nature is a key benefit, it also caps our maximum profit at the 195.0 strike. Therefore, this trade is best suited for a scenario where we anticipate a moderate rally, rather than an explosive breakout. We will monitor the stock's movement relative to the 190.0 strike and be prepared to manage the position if the bullish momentum stalls or reverses.\n\n```json\n{\n  \"strategy\": \"Bull Call Spread\",\n  \"legs\": [\n    {\n      \"action\": \"BUY\",\n      \"type\": \"CALL\",\n      \"strike\": 190.0,\n      \"delta\": 0.4715081981848717\n    },\n    {\n      \"action\": \"SELL\",\n      \"type\": \"CALL\",\n      \"strike\": 195.0,\n      \"delta\": 0.3433893666618484\n    }\n  ]\n}\n```",
+    "conviction_level": "Medium",
+    "generation_status": "generated",
+    "max_risk": 186.93105462567843,
+    "max_reward": 313.0689453743216,
+    "net_premium": -186.93105462567843
+  },
+  "position_details": {
+    "strategy_name": "Bull Call Spread",
+    "agent_name": "SystematicTraderAgent",
+    "trade_legs": [
+      {
+        "contract_symbol": "SYNTHETIC_C_241115_00190000",
+        "type": "CALL",
+        "action": "BUY",
+        "strike_price": 190.0,
+        "expiration_date": "2024-11-15",
+        "quantity": 3,
+        "key_greeks_at_selection": {
+          "delta": 0.5043918426785455,
+          "gamma": 0.031610519704391084,
+          "theta": -0.10228489763917922,
+          "vega": 0.20881186359646733,
+          "rho": 0.0693691728374926
+        }
+      },
+      {
+        "contract_symbol": "SYNTHETIC_C_241115_00195000",
+        "type": "CALL",
+        "action": "SELL",
+        "strike_price": 195.0,
+        "expiration_date": "2024-11-15",
+        "quantity": 3,
+        "key_greeks_at_selection": {
+          "delta": 0.35271834699152466,
+          "gamma": 0.029432858004525102,
+          "theta": -0.09243906611766746,
+          "vega": 0.19442672845525355,
+          "rho": 0.04891375794697745
+        }
+      }
+    ],
+    "thesis_direction": "Bullish"
+  },
+  "pricing": {
+    "entry_price": -574.8129929739612,
+    "exit_price": 584.9024999999999,
+    "spot_at_entry": 187.5399932861328,
+    "spot_at_exit": 188.99000549316406
+  },
+  "performance": {
+    "pnl": 10.089507026038746,
+    "pnl_pct": 1.7552677391368214,
+    "status": "closed",
+    "highest_pnl_pct": 4.364377168345468
+  },
+  "position_greeks": {
+    "net_delta": 0.455,
+    "net_gamma": 0.0065,
+    "net_theta": -0.0295,
+    "net_vega": 0.0432,
+    "net_rho": 0.0614,
+    "delta_dollars": 8599.43,
+    "theta_daily_dollars": -2.95,
+    "vega_dollars": 4.32
+  },
+  "agent_reports": {
+    "volatility": "agent='VolatilityModelingAgent' ticker='AMZN' iv_rank=65.83791883760458 volatility_forecast='Volatility holding marginally above long-run norms.' skew_analysis='Near-the-money skew is balanced between calls and puts.' term_structure='Flat term structure between near and far expirations.'",
+    "sentiment": "agent='SyntheticMeanReversion' ticker='AMZN' overall_sentiment_score=0.0 overall_summary='Choppy market. RSI: 52.0, Trend: 4.4%.' articles=[ArticleSentiment(title='AMZN range-bound', publisher='Mean Reversion Logic', link=None, published_at=None, summary=None, sentiment_score=0.0, rationale='No clear trend. Favor neutral strategies.')]",
+    "technical": "agent='TechnicalAnalyst' ticker='AMZN' indicators=TechnicalIndicators(latest_close=201.4499969482422, price_date='2024-11-25T00:00:00-05:00', SMA_50={'value': 193.32840026855467, 'slope': 0.2717399597167908, 'price_relationship': 'above'}, SMA_200={'value': None, 'slope': None, 'price_relationship': None}, EMA_20={'value': 200.56748898262308, 'price_relationship': 'above', 'slope': -0.1268695341303882}, Bollinger_Bands={'lower': 187.80695368105975, 'middle': 201.92849884033203, 'upper': 216.0500439996043, 'width': 28.243090318544546, 'price_position': 0.4830577360093045}, MACD_Signal={'macd': 2.765765806385815, 'signal': 4.1003014287526955, 'histogram': -1.3345356223668805, 'crossover': 'bearish'}, RSI={'value': 52.02491728095258, 'regime': 'neutral'}, Supertrend_Signal={'trend': 'bearish', 'level': 214.48313451573767}, OBV_Trend={'value': 331426800.0, 'trend': 'falling'}, recent_candlestick_patterns=[{'date': '2024-11-12T00:00:00-05:00', 'pattern': 'Hammer', 'direction': 'bullish'}, {'date': '2024-11-20T00:00:00-05:00', 'pattern': 'Doji', 'direction': 'neutral'}, {'date': '2024-11-19T00:00:00-05:00', 'pattern': 'Bullish Engulfing', 'direction': 'bullish'}], derived_signals=[], key_levels={'recent_high': 215.89999389648438, 'recent_low': 185.22999572753906}) llm_report={'technical_bias': 'neutral', 'summary': '```json\\n{\\n  \"ticker\": \"AMZN\",\\n  \"technical_outlook\": {\\n    \"primary_trend\": {\\n      \"assessment\": \"Bullish (Intermediate-Term)\",\\n      \"justification\": \"The price ($201.45) is trading above the rising 50-day Simple Moving Average (SMA_50 at $193.33), indicating a strong intermediate-term uptrend. The 200-day SMA is not available, preventing a long-term trend assessment (Golden/Death Cross), but the current positioning suggests bullish control.\"\\n    },\\n    \"momentum_assessment\": {\\n      \"status\": \"Neutral/Weakening\",\\n      \"justification\": \"The Relative Strength Index (RSI) is at 52.02, firmly in the neutral regime, suggesting neither overbought nor oversold conditions. However, the MACD has recently executed a \\'bearish crossover\\' (MACD line below the Signal line), with a negative histogram (-1.33). This indicates that bullish momentum is weakening and downward pressure is increasing in the short term.\"\\n    },\\n    \"volatility_and_levels\": {\\n      \"volatility_status\": \"Neutral/Consolidation\",\\n      \"price_position\": \"The price is near the Bollinger Band Middle line ($201.93), specifically at the 48.3% mark between the lower and upper bands. This suggests the price is consolidating near its 20-day average, with volatility (Band Width: 28.24) remaining moderate.\",\\n      \"key_support\": [\\n        \"EMA_20: $200.57 (Immediate)\",\\n        \"SMA_50: $193.33 (Intermediate)\",\\n        \"Bollinger Lower Band: $187.81\"\\n      ],\\n      \"key_resistance\": [\\n        \"Bollinger Middle Band: $201.93 (Immediate)\",\\n        \"Supertrend Bearish Level: $214.48\",\\n        \"Bollinger Upper Band / Recent High: $216.05 / $215.90\"\\n      ]\\n    },\\n    \"short_term_synthesis\": {\\n      \"bias\": \"Cautiously Bearish (Short-Term)\",\\n      \"justification\": \"Despite the intermediate-term bullish trend (price > SMA_50), short-term signals are concerning. The Supertrend indicator is \\'bearish\\' (resistance at $214.48), and the On-Balance Volume (OBV) trend is \\'falling,\\' confirming that selling pressure is dominating volume flow. While recent candlestick patterns included a \\'Bullish Engulfing\\' and \\'Hammer,\\' the current price is struggling below the EMA_20 and the Bollinger Middle Band, compounded by the MACD\\'s bearish crossover. This suggests a high probability of a short-term pullback or consolidation toward the SMA_50.\"\\n    }\\n  },\\n  \"technical_bias\": \"Neutral\",\\n  \"key_levels_to_watch\": {\\n    \"immediate_resistance\": \"$201.93 (Bollinger Middle Band)\",\\n    \"critical_support\": \"$200.57 (EMA_20) - A break below this level confirms short-term weakness.\",\\n    \"upside_target\": \"$214.48 (Supertrend Resistance)\",\\n    \"downside_risk\": \"$193.33 (SMA_50)\"\\n  }\\n}\\n```'} llm_raw='```json\\n{\\n  \"ticker\": \"AMZN\",\\n  \"technical_outlook\": {\\n    \"primary_trend\": {\\n      \"assessment\": \"Bullish (Intermediate-Term)\",\\n      \"justification\": \"The price ($201.45) is trading above the rising 50-day Simple Moving Average (SMA_50 at $193.33), indicating a strong intermediate-term uptrend. The 200-day SMA is not available, preventing a long-term trend assessment (Golden/Death Cross), but the current positioning suggests bullish control.\"\\n    },\\n    \"momentum_assessment\": {\\n      \"status\": \"Neutral/Weakening\",\\n      \"justification\": \"The Relative Strength Index (RSI) is at 52.02, firmly in the neutral regime, suggesting neither overbought nor oversold conditions. However, the MACD has recently executed a \\'bearish crossover\\' (MACD line below the Signal line), with a negative histogram (-1.33). This indicates that bullish momentum is weakening and downward pressure is increasing in the short term.\"\\n    },\\n    \"volatility_and_levels\": {\\n      \"volatility_status\": \"Neutral/Consolidation\",\\n      \"price_position\": \"The price is near the Bollinger Band Middle line ($201.93), specifically at the 48.3% mark between the lower and upper bands. This suggests the price is consolidating near its 20-day average, with volatility (Band Width: 28.24) remaining moderate.\",\\n      \"key_support\": [\\n        \"EMA_20: $200.57 (Immediate)\",\\n        \"SMA_50: $193.33 (Intermediate)\",\\n        \"Bollinger Lower Band: $187.81\"\\n      ],\\n      \"key_resistance\": [\\n        \"Bollinger Middle Band: $201.93 (Immediate)\",\\n        \"Supertrend Bearish Level: $214.48\",\\n        \"Bollinger Upper Band / Recent High: $216.05 / $215.90\"\\n      ]\\n    },\\n    \"short_term_synthesis\": {\\n      \"bias\": \"Cautiously Bearish (Short-Term)\",\\n      \"justification\": \"Despite the intermediate-term bullish trend (price > SMA_50), short-term signals are concerning. The Supertrend indicator is \\'bearish\\' (resistance at $214.48), and the On-Balance Volume (OBV) trend is \\'falling,\\' confirming that selling pressure is dominating volume flow. While recent candlestick patterns included a \\'Bullish Engulfing\\' and \\'Hammer,\\' the current price is struggling below the EMA_20 and the Bollinger Middle Band, compounded by the MACD\\'s bearish crossover. This suggests a high probability of a short-term pullback or consolidation toward the SMA_50.\"\\n    }\\n  },\\n  \"technical_bias\": \"Neutral\",\\n  \"key_levels_to_watch\": {\\n    \"immediate_resistance\": \"$201.93 (Bollinger Middle Band)\",\\n    \"critical_support\": \"$200.57 (EMA_20) - A break below this level confirms short-term weakness.\",\\n    \"upside_target\": \"$214.48 (Supertrend Resistance)\",\\n    \"downside_risk\": \"$193.33 (SMA_50)\"\\n  }\\n}\\n```'",
+    "fundamental": "agent='FundamentalAnalyst' ticker='AMZN' generated_at='2025-11-25T10:50:13.107988+00:00' data_source='cache' business_overview={'longBusinessSummary': None, 'sector': None, 'industry': None, 'marketCap': None, 'forwardPE': None, 'pegRatio': None} financial_ratios=FinancialRatios(pe_ratio=None, ps_ratio=None, debt_to_equity=None, current_ratio=None) financial_trends=[] qualitative_summary=QualitativeSummary(mdna_summary={'summary': 'Section unavailable.'}, risk_factors=[{'risk': 'Section unavailable.'}]) llm_synthesis={'overall_thesis': 'neutral', 'reasoning': '## Fundamental Analysis Report: AMZN\\n\\n**Analyst:** Meticulous Fundamental Analyst\\n**Date:** October 26, 2023\\n\\n---\\n\\n### Data Synthesis and Limitations\\n\\nThe provided data for AMZN is severely limited. Key quantitative metrics (P/E, P/S, D/E, Current Ratio) and multi-year financial trends are **missing**. Furthermore, the critical qualitative sections from the 10-K/10-Q (MD&A and Risk Factors) are also unavailable.\\n\\nThis lack of core financial and operational data makes a definitive intrinsic valuation or detailed assessment of business quality impossible. The analysis below is based solely on the general knowledge of Amazon\\'s business model and the limited insider activity data.\\n\\n---\\n\\n### SWOT Analysis\\n\\nGiven the data constraints, this SWOT analysis relies on general market knowledge of Amazon\\'s business segments (E-commerce, AWS, Advertising).\\n\\n| Category | Analysis |\\n| :--- | :--- |\\n| **Strengths** | **Market Dominance:** Unparalleled leadership in e-commerce and cloud computing (AWS). **AWS Profit Engine:** High-margin, rapidly growing cloud segment provides significant cash flow and subsidizes lower-margin retail operations. **Logistics Network:** Massive, proprietary fulfillment and logistics infrastructure creates a significant barrier to entry. |\\n| **Weaknesses** | **Retail Margin Pressure:** The core e-commerce business operates on notoriously thin margins, requiring constant investment in logistics and technology. **Regulatory Scrutiny:** High visibility and market power attract continuous antitrust and regulatory attention globally. **Capital Intensity:** Maintaining the logistics network and cloud infrastructure requires massive, ongoing capital expenditures. |\\n| **Opportunities** | **AI/ML Integration:** Leveraging AWS\\'s AI capabilities across all business segments (e.g., generative AI services, personalized shopping). **Advertising Growth:** Monetizing the vast e-commerce traffic through high-margin digital advertising services. **International Expansion:** Deepening penetration in emerging international markets for both retail and AWS. |\\n| **Threats** | **Economic Downturn:** Discretionary spending cuts impact the retail segment, while corporate IT budget tightening could slow AWS growth. **Competition:** Intensifying competition in cloud (MSFT Azure, GOOG GCP) and e-commerce (WMT, SHOP). **Labor Costs:** Rising labor costs for fulfillment and delivery staff pressure retail margins. |\\n\\n---\\n\\n### Financial Health\\n\\n| Metric | Rating | Justification |\\n| :--- | :--- | :--- |\\n| **Quantitative Data** | **Undeterminable** | All key financial ratios (P/E, P/S, D/E, Current Ratio) and growth trends are missing. A financial health assessment cannot be performed. |\\n\\n---\\n\\n### Insider Activity Analysis\\n\\n| Signal | Confidence | Summary |\\n| :--- | :--- | :--- |\\n| **Neutral** | **Low** | The data shows a balance of 0 buys and 0 sells, indicating no clear directional signal from insiders. The recent transactions listed appear to be primarily non-open market transactions (potentially compensation or vesting events) given the zero-value entries, making them poor indicators of management\\'s view on valuation. |\\n\\n---\\n\\n### Overall Thesis\\n\\n| Rating | Justification |\\n| :--- | :--- |\\n| **Neutral (Data-Constrained)** | **A definitive rating is impossible due to the complete absence of core quantitative financial data (ratios, growth rates) and critical qualitative disclosures (MD&A, Risk Factors).** While general knowledge suggests Amazon is a high-quality business with two powerful engines (E-commerce and AWS), a fundamental analyst cannot assign a \\'bullish\\' or \\'bearish\\' rating without knowing its current valuation (P/E, P/S), profitability trends (margins), and balance sheet strength (D/E, Current Ratio). The current analysis is purely speculative without the necessary financial inputs. |\\n\\n---\\n\\n### Required Next Steps\\n\\nTo move beyond a \"Neutral (Data-Constrained)\" rating, the following data points are **mandatory**:\\n\\n1. **Valuation Ratios:** Current P/E, P/S, and Forward P/E.\\n2. **Balance Sheet Health:** Debt-to-Equity Ratio and Current Ratio.\\n3. **Growth and Profitability:** 3-5 year CAGR for Revenue and Net Income, and recent trends in Operating and Net Margins.\\n4. **Qualitative Insight:** Full text of Management\\'s Discussion & Analysis (MD&A) and key Risk Factors from the latest 10-K/10-Q.'}",
+    "trade_thesis": "winning_argument='Bearish' conviction_level='Medium' summary='The short-term technical indicators show a clear breakdown in momentum and increasing selling pressure, suggesting a probable pullback towards intermediate support, despite the stock remaining in a long-term uptrend.' key_evidence=[\"The MACD executed a 'bearish crossover' with a negative histogram (-1.33), signaling a loss of short-term bullish momentum.\", \"The On-Balance Volume (OBV) trend is 'falling,' confirming that the recent price stagnation is accompanied by distribution and selling volume.\", \"The Supertrend signal is explicitly 'bearish,' setting strong short-term resistance at $214.48.\", 'The price is struggling near the immediate support levels (EMA_20 at $200.57 and Bollinger Middle Band at $201.93), making it vulnerable to a move toward the critical intermediate support at the SMA_50 ($193.33).']"
+  },
+  "greeks_history": [
+    {
+      "date": "2024-10-14T00:00:00",
+      "spot_price": 187.5399932861328,
+      "net_delta": 0.3993,
+      "net_gamma": 0.007,
+      "net_theta": -0.0313,
+      "net_vega": 0.055,
+      "net_rho": 0.0608,
+      "delta_dollars": 7488.16,
+      "theta_daily_dollars": -3.13,
+      "vega_dollars": 5.5
+    },
+    {
+      "date": "2024-10-15T00:00:00",
+      "spot_price": 187.69000244140625,
+      "net_delta": 0.4385,
+      "net_gamma": 0.0094,
+      "net_theta": -0.035,
+      "net_vega": 0.0652,
+      "net_rho": 0.0653,
+      "delta_dollars": 8230.06,
+      "theta_daily_dollars": -3.5,
+      "vega_dollars": 6.52
+    },
+    {
+      "date": "2024-10-15T00:00:00",
+      "spot_price": 187.69000244140625,
+      "net_delta": 0.4385,
+      "net_gamma": 0.0094,
+      "net_theta": -0.035,
+      "net_vega": 0.0652,
+      "net_rho": 0.0653,
+      "delta_dollars": 8230.06,
+      "theta_daily_dollars": -3.5,
+      "vega_dollars": 6.52
+    },
+    {
+      "date": "2024-10-16T00:00:00",
+      "spot_price": 186.88999938964844,
+      "net_delta": 0.3726,
+      "net_gamma": 0.0069,
+      "net_theta": -0.0343,
+      "net_vega": 0.0549,
+      "net_rho": 0.0528,
+      "delta_dollars": 6963.36,
+      "theta_daily_dollars": -3.43,
+      "vega_dollars": 5.49
+    },
+    {
+      "date": "2024-10-16T00:00:00",
+      "spot_price": 186.88999938964844,
+      "net_delta": 0.3726,
+      "net_gamma": 0.0069,
+      "net_theta": -0.0343,
+      "net_vega": 0.0549,
+      "net_rho": 0.0528,
+      "delta_dollars": 6963.36,
+      "theta_daily_dollars": -3.43,
+      "vega_dollars": 5.49
+    },
+    {
+      "date": "2024-10-17T00:00:00",
+      "spot_price": 187.52999877929688,
+      "net_delta": 0.4105,
+      "net_gamma": 0.008,
+      "net_theta": -0.0353,
+      "net_vega": 0.0575,
+      "net_rho": 0.0568,
+      "delta_dollars": 7698.83,
+      "theta_daily_dollars": -3.53,
+      "vega_dollars": 5.75
+    },
+    {
+      "date": "2024-10-17T00:00:00",
+      "spot_price": 187.52999877929688,
+      "net_delta": 0.4105,
+      "net_gamma": 0.008,
+      "net_theta": -0.0353,
+      "net_vega": 0.0575,
+      "net_rho": 0.0568,
+      "delta_dollars": 7698.83,
+      "theta_daily_dollars": -3.53,
+      "vega_dollars": 5.75
+    },
+    {
+      "date": "2024-10-18T00:00:00",
+      "spot_price": 188.99000549316406,
+      "net_delta": 0.455,
+      "net_gamma": 0.0065,
+      "net_theta": -0.0295,
+      "net_vega": 0.0432,
+      "net_rho": 0.0614,
+      "delta_dollars": 8599.43,
+      "theta_daily_dollars": -2.95,
+      "vega_dollars": 4.32
+    },
+    {
+      "date": "2024-10-18T00:00:00",
+      "spot_price": 188.99000549316406,
+      "net_delta": 0.455,
+      "net_gamma": 0.0065,
+      "net_theta": -0.0295,
+      "net_vega": 0.0432,
+      "net_rho": 0.0614,
+      "delta_dollars": 8599.43,
+      "theta_daily_dollars": -2.95,
+      "vega_dollars": 4.32
+    }
+  ],
+  "pnl_history": [
+    {
+      "date": "2024-10-14T00:00:00",
+      "current_value": 556.57,
+      "pnl": -18.242992973961123,
+      "pnl_pct": -3.173726620126613
+    },
+    {
+      "date": "2024-10-15T00:00:00",
+      "current_value": 547.13,
+      "pnl": -27.682992973961177,
+      "pnl_pct": -4.815999866449645
+    },
+    {
+      "date": "2024-10-15T00:00:00",
+      "current_value": 547.13,
+      "pnl": -27.682992973961177,
+      "pnl_pct": -4.815999866449645
+    },
+    {
+      "date": "2024-10-16T00:00:00",
+      "current_value": 538.86,
+      "pnl": -35.95299297396116,
+      "pnl_pct": -6.254728653217797
+    },
+    {
+      "date": "2024-10-16T00:00:00",
+      "current_value": 538.86,
+      "pnl": -35.95299297396116,
+      "pnl_pct": -6.254728653217797
+    },
+    {
+      "date": "2024-10-17T00:00:00",
+      "current_value": 548.6,
+      "pnl": -26.21299297396115,
+      "pnl_pct": -4.560264519829424
+    },
+    {
+      "date": "2024-10-17T00:00:00",
+      "current_value": 548.6,
+      "pnl": -26.21299297396115,
+      "pnl_pct": -4.560264519829424
+    },
+    {
+      "date": "2024-10-18T00:00:00",
+      "current_value": 599.9,
+      "pnl": 25.087007026038805,
+      "pnl_pct": 4.364377168345468
+    },
+    {
+      "date": "2024-10-18T00:00:00",
+      "current_value": 599.9,
+      "pnl": 25.087007026038805,
+      "pnl_pct": 4.364377168345468
+    }
+  ]
+}

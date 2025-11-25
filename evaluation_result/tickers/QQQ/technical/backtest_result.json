@@ -1,0 +1,17 @@
+{
+  "ticker": "QQQ",
+  "strategy_name": "technical",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 9162.250935411726,
+  "total_return": -837.7490645882735,
+  "total_return_pct": -8.377490645882734,
+  "num_trades": 11,
+  "num_winners": 6,
+  "num_losers": 5,
+  "win_rate": 0.5454545454545454,
+  "average_pnl": -76.15900587166128,
+  "max_drawdown": -0.0929830154315232,
+  "sharpe_ratio": -2.073087143316038
+}

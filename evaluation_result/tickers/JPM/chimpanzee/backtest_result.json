@@ -1,0 +1,17 @@
+{
+  "ticker": "JPM",
+  "strategy_name": "chimpanzee",
+  "start_date": "2024-09-01T00:00:00",
+  "end_date": "2024-12-01T00:00:00",
+  "initial_capital": 10000.0,
+  "final_capital": 10486.315040662259,
+  "total_return": 486.315040662259,
+  "total_return_pct": 4.86315040662259,
+  "num_trades": 13,
+  "num_winners": 7,
+  "num_losers": 6,
+  "win_rate": 0.5384615384615384,
+  "average_pnl": 37.40884928171226,
+  "max_drawdown": -0.06617993176789812,
+  "sharpe_ratio": 0.8829277563517496
+}
